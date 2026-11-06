@@ -1,4 +1,3 @@
-<?php header('Content-Type: text/html; charset=utf-8'); ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,7 +6,7 @@
 <title>GDX CHEF STORE | متجر شحن الألعاب</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --gold:#D4AF37; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; --yellow:#f39c12; }
+  :root { --gold:#D4AF37; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; --yellow:#f39c12; --green:#25D366; }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
   body { background:var(--bg); color:var(--text); line-height: 1.6; font-size: 14px; }
   
@@ -19,8 +18,8 @@
   nav a.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
   .user-icon { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid var(--gold); display: grid; place-items: center; cursor: pointer; }
   .user-icon svg { width: 18px; height: 18px; fill: var(--gold); }
-  .user-icon.logged-in { border-color: #25D366; }
-  .user-icon.logged-in svg { fill: #25D366; }
+  .user-icon.logged-in { border-color: var(--green); }
+  .user-icon.logged-in svg { fill: var(--green); }
 
   .container { max-width: 1000px; margin: 0 auto; padding: 20px 15px; }
   .page-section { display: none; }
@@ -43,11 +42,13 @@
   .product-info p { color: var(--muted); font-size: 0.75rem; margin-bottom: 10px; flex-grow: 1; }
   .price { font-size: 1.1rem; font-weight: 900; margin-bottom: 10px; }
   .btn { background: var(--gold); color: #000; border: none; cursor: pointer; padding: 8px; border-radius: 8px; font-weight: 700; width: 100%; font-family: inherit; font-size: 0.85rem; }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-gray { background: #444; color: #fff; }
 
   .order-history-card { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
   .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
   .status-pending { background: var(--yellow); color: #000; }
-  .status-approved { background: #25D366; color: #fff; }
+  .status-approved { background: var(--green); color: #fff; }
   .status-rejected { background: #ff4d4d; color: #fff; }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; place-items: center; }
@@ -63,11 +64,13 @@
   .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: #000; padding: 5px 8px; border-radius: 4px; border: 1px solid #222; }
   .info-row span { color: var(--gold-soft); font-weight: bold; font-family: monospace; font-size: 1rem; }
   .copy-btn { background: var(--gold); color: #000; border: none; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; margin-right: 5px; }
-  .warning-text { color: #ff4d4d; font-size: 0.8rem; margin-top: 10px; text-align: center; border-top: 1px dashed #444; padding-top: 8px; }
+  .warning-text { color: #ff4d4d; font-weight: bold; font-size: 0.85rem; margin-top: 10px; text-align: center; border-top: 1px dashed #444; padding-top: 8px; }
 
   .input-group { margin-bottom: 15px; text-align: right; }
   .input-group label { display: block; margin-bottom: 5px; color: var(--gold); font-weight: 700; }
   .input-group input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
+  .note-text { color: var(--muted); font-size: 0.8rem; margin-top: 5px; }
+  
   .error-msg { background: rgba(255,0,0,0.1); color: #ff4d4d; padding: 8px; border-radius: 6px; margin-bottom: 15px; display: none; }
   footer { text-align: center; padding: 20px; border-top: 1px solid #222; color: var(--muted); margin-top: 40px; }
 </style>
@@ -120,11 +123,16 @@
     <div class="input-group" id="gameIdGroup" style="display: none;">
       <label>أدخل الآيدي (ID) الخاص باللعبة</label>
       <input type="text" id="gameIdInput" placeholder="مثلاً 123456789">
+      <div class="note-text">يرجى التحقق من الآيدي قبل الإرسال، المتجر غير مسؤول عن الآيدي الخاطئ.</div>
     </div>
 
     <div class="input-group"><label>المبلغ المدفوع</label><input type="text" id="receiptAmount" placeholder="مثلاً 1000"></div>
     <div class="input-group"><label>صورة الوصل</label><input type="file" id="receiptFile" accept="image/*" style="padding: 8px;"></div>
-    <button class="btn" id="submitReceiptBtn" onclick="submitReceipt()">تأكيد الطلب</button>
+    
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button class="btn btn-gray" onclick="closeModal('receiptModal')">رجوع</button>
+      <button class="btn btn-green" id="submitReceiptBtn" onclick="submitReceipt()">تأكيد الطلب</button>
+    </div>
   </div>
 </div>
 
@@ -164,7 +172,6 @@
 
   function initApp() { checkSession(); loadProducts(); loadSettings(); }
 
-  // جلب إعدادات الدفع من قاعدة البيانات
   async function loadSettings() {
     const { data, error } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
     if (!error && data) currentSettings = data;
@@ -257,13 +264,8 @@
     document.getElementById('paymentModal').style.display = 'grid';
   }
 
-  // دالة لنسخ النص
   function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-      alert('تم النسخ بنجاح!');
-    }).catch(err => {
-      alert('فشل النسخ: ' + err);
-    });
+    navigator.clipboard.writeText(text).then(() => { alert('تم النسخ بنجاح!'); }).catch(err => { alert('فشل النسخ: ' + err); });
   }
 
   function selectPayment(method) {
@@ -277,18 +279,18 @@
       if (method === 'Flexy') {
         box.innerHTML = `<h4>الدفع عبر فليكسي (Flexy)</h4>
           <div class="info-row"><span>${currentSettings.flexy_number}</span><button class="copy-btn" onclick="copyToClipboard('${currentSettings.flexy_number}')">نسخ</button></div>
-          <p style="text-align:center; font-size:0.85rem; color:var(--muted);">يرجى تحويل المبلغ إلى الرقم أعلاه.</p>`;
+          <p style="text-align:center; font-size:0.85rem; color:var(--muted); margin-top:10px;">يرجى تحويل المبلغ إلى الرقم أعلاه.</p>`;
       } else if (method === 'CCP') {
         box.innerHTML = `<h4>الدفع عبر CCP / BaridiMob</h4>
-          <div class="info-row"><span>${currentSettings.ccp_rib}</span><button class="copy-btn" onclick="copyToClipboard('${currentSettings.ccp_rib}')">نسخ RIB</button></div>
-          <p>CCP: <strong>${currentSettings.ccp_rib}</strong> | المفتاح: <strong>${currentSettings.ccp_key}</strong></p>
           <p>الاسم: <strong>${currentSettings.ccp_name}</strong></p>
-          <div class="warning-text">📌 يتوقف الدفع عبر هاته الطريقة على الساعة 9 ليلا ويعود الساعة 7 صباحا. أي دفع بعد الـ 9 مساءً مرفوض.</div>`;
+          <p>CCP: <strong>${currentSettings.ccp_rib}</strong> | المفتاح: <strong>${currentSettings.ccp_key}</strong></p>
+          <div class="info-row" style="margin-top:10px;"><span>${currentSettings.ccp_rib}</span><button class="copy-btn" onclick="copyToClipboard('${currentSettings.ccp_rib}')">نسخ RIB</button></div>
+          <div class="warning-text">📌 ملاحظة: الدفع عبر هاته الطريقة يتوقف على الساعة 9 ليلا</div>`;
       } else if (method === 'Binance') {
         box.innerHTML = `<h4>الدفع عبر Binance</h4>
           <p>البريد الإلكتروني: <strong>${currentSettings.binance_email}</strong></p>
-          <div class="info-row"><span>ID: ${currentSettings.binance_id}</span><button class="copy-btn" onclick="copyToClipboard('${currentSettings.binance_id}')">نسخ ID</button></div>
-          <p style="text-align:center; font-size:0.85rem; color:var(--muted);">يرجى تحويل المبلغ بالدولار عبر Binance.</p>`;
+          <div class="info-row"><span>${currentSettings.binance_id}</span><button class="copy-btn" onclick="copyToClipboard('${currentSettings.binance_id}')">نسخ</button></div>
+          <p style="text-align:center; font-size:0.85rem; color:var(--muted); margin-top:10px;">يرجى تحويل المبلغ بالدولار عبر Binance.</p>`;
       }
     } else {
       box.innerHTML = '<p style="color:red;">خطأ في تحميل معلومات الدفع. يرجى تحديث الصفحة.</p>';
