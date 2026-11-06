@@ -9,12 +9,31 @@
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, system-ui, sans-serif; }
   body { background:var(--bg); color:var(--text); line-height: 1.6; }
   
-  header { background: rgba(0,0,0,0.95); border-bottom: 1px solid #2a2418; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; }
+  /* شريط التنقل العلوي */
+  header { background: #0a0a0a; border-bottom: 1px solid #2a2418; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  
+  /* الأيقونة والشعار */
+  .header-right { display: flex; align-items: center; gap: 15px; }
+  .user-icon { width: 40px; height: 40px; border-radius: 50%; background: #1a1a1a; border: 2px solid var(--gold); display: grid; place-items: center; cursor: pointer; transition: 0.3s; }
+  .user-icon:hover { background: var(--gold); }
+  .user-icon svg { width: 20px; height: 20px; fill: var(--gold); transition: 0.3s; }
+  .user-icon:hover svg { fill: #000; }
+  .user-icon.logged-in { border-color: #25D366; background: #25D366; }
+  .user-icon.logged-in svg { fill: #fff; }
+  
   .logo { color: var(--gold); font-weight: 900; font-size: 1.2rem; letter-spacing: 0.05em; }
-  nav { display: flex; gap: 15px; flex-wrap: wrap; }
+
+  /* روابط التنقل */
+  nav { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; width: 100%; justify-content: center; border-top: 1px solid #1a1a1a; padding-top: 10px;}
+  @media (min-width: 600px) {
+    nav { margin-top: 0; width: auto; border-top: none; padding-top: 0; }
+    .header-right { order: 2; }
+    nav { order: 1; }
+  }
+  
   nav a { color: var(--text); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; cursor: pointer; }
   nav a:hover, nav a.active { color: var(--gold); font-weight: bold; }
-  
+
   .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
   .page-section { display: none; }
   .page-section.active { display: block; animation: fadeIn 0.5s; }
@@ -41,18 +60,32 @@
 
   footer { text-align: center; padding: 20px; border-top: 1px solid #2a2418; color: var(--muted); font-size: 0.8rem; margin-top: 40px; }
   
-  /* نافذة الدفع */
-  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; place-items: center; }
+  /* النوافذ المنبثقة */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; place-items: center; }
   .modal-content { background: var(--card); border: 1px solid var(--gold); border-radius: 12px; padding: 30px; width: 90%; max-width: 400px; text-align: center; position: relative; }
   .close-btn { position: absolute; top: 10px; left: 15px; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
   .pay-btn { background: #222; color: var(--gold-soft); border: 1px solid #444; padding: 12px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-family: inherit; font-size: 1rem; width: 100%; margin-bottom: 10px; }
   .pay-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+
+  /* حقول الإدخال */
+  .input-group { margin-bottom: 15px; text-align: right; }
+  .input-group label { display: block; margin-bottom: 5px; color: var(--gold-soft); font-size: 0.9rem; }
+  .input-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
+  .auth-switch { margin-top: 15px; font-size: 0.9rem; color: var(--muted); }
+  .auth-switch a { color: var(--gold); cursor: pointer; text-decoration: underline; }
+  .error-msg { color: #ff4d4d; font-size: 0.9rem; margin-bottom: 10px; display: none; }
 </style>
 </head>
 <body onload="initApp()">
 
 <header>
-  <div class="logo">GDX CHEF</div>
+  <div class="header-right">
+    <div class="user-icon" id="userIconBtn" onclick="handleUserIconClick()">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </div>
+    <div class="logo">GDX CHEF</div>
+  </div>
+  
   <nav>
     <a onclick="showPage('home')" class="active" id="nav-home">الرئيسية</a>
     <a onclick="showPage('games')" id="nav-games">شحن الألعاب</a>
@@ -90,7 +123,7 @@
     <div class="wallet-box">
       <h3>رصيدك الحالي</h3>
       <div style="font-size: 2.5rem; color: var(--gold-soft); font-weight: bold; margin-bottom: 20px;">0.00 DA</div>
-      <button class="btn" onclick="alert('قريباً: سيتم تفعيل شحن الرصيد!')">شحن الرصيد (CCP / Binance)</button>
+      <button class="btn" onclick="checkAuthForWallet()">شحن الرصيد (CCP / Binance)</button>
     </div>
   </div>
 
@@ -115,12 +148,51 @@
   </div>
 </div>
 
+<!-- نافذة الدفع -->
 <div class="modal-overlay" id="paymentModal">
   <div class="modal-content">
-    <button class="close-btn" onclick="closeModal()">&times;</button>
+    <button class="close-btn" onclick="closeModal('paymentModal')">&times;</button>
     <h2>اختر طريقة الدفع</h2>
     <p id="modal-product-name" style="margin-bottom: 20px; color: var(--gold-soft);">اسم المنتج</p>
     <div id="payment-options"></div>
+  </div>
+</div>
+
+<!-- نافذة تسجيل الدخول / إنشاء حساب -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('authModal')">&times;</button>
+    <h2 id="authTitle">تسجيل الدخول</h2>
+    <div id="authError" class="error-msg"></div>
+    
+    <div class="input-group">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="authEmail" placeholder="example@email.com">
+    </div>
+    <div class="input-group">
+      <label>كلمة المرور</label>
+      <input type="password" id="authPassword" placeholder="********">
+    </div>
+    
+    <button class="btn" id="authSubmitBtn" onclick="handleAuthSubmit()">دخول</button>
+    
+    <div class="auth-switch">
+      <span id="authSwitchText">ليس لديك حساب؟ </span>
+      <a onclick="toggleAuthMode()" id="authSwitchLink">أنشئ حساباً الآن</a>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة معلومات الحساب للمسجلين -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('profileModal')">&times;</button>
+    <h2>حسابي</h2>
+    <p style="margin-bottom: 20px; color: var(--gold-soft); font-size: 0.9rem;" id="profileEmail"></p>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+       <button class="btn" onclick="showPage('wallet'); closeModal('profileModal');">الذهاب للمحفظة</button>
+       <button class="btn" style="background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d;" onclick="handleLogout()">تسجيل الخروج</button>
+    </div>
   </div>
 </div>
 
@@ -129,7 +201,6 @@
 <!-- ربط مكتبة Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // التقاط أي خطأ وعرضه على الشاشة
   window.onerror = function(msg, url, line) {
     document.getElementById('error-box').style.display = 'block';
     document.getElementById('error-box').innerText = 'حدث خطأ: ' + msg + ' (في السطر ' + line + ')';
@@ -139,14 +210,120 @@
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY294Zm1kbWNqb2Zzd21na2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MjMzMTYsImV4cCI6MjEwOTQ5OTMxNn0.H2At_v8QhrO89001o-y0nV0sXf3Ve6nSgUcqI3RtEq8';
   
   let supabaseClient = null;
+  let currentUser = null;
+  let isSignUpMode = false;
 
   function initApp() {
     try {
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      checkSession();
       loadProducts(); 
     } catch (e) {
       document.getElementById('error-box').style.display = 'block';
       document.getElementById('error-box').innerText = 'خطأ في الاتصال بقاعدة البيانات: ' + e.message;
+    }
+  }
+
+  // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
+  async function checkSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if(session) {
+      currentUser = session.user;
+      updateUIForUser();
+    }
+  }
+
+  function updateUIForUser() {
+    const iconBtn = document.getElementById('userIconBtn');
+    if (currentUser) {
+      iconBtn.classList.add('logged-in');
+    } else {
+      iconBtn.classList.remove('logged-in');
+    }
+  }
+
+  // عند الضغط على أيقونة المستخدم
+  function handleUserIconClick() {
+    if (currentUser) {
+      // إذا كان مسجلاً، افتح نافذة الملف الشخصي
+      document.getElementById('profileEmail').innerText = currentUser.email;
+      document.getElementById('profileModal').style.display = 'grid';
+    } else {
+      // إذا لم يكن مسجلاً، افتح نافذة تسجيل الدخول
+      openAuthModal();
+    }
+  }
+
+  function openAuthModal() {
+    document.getElementById('authModal').style.display = 'grid';
+    document.getElementById('authError').style.display = 'none';
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+  function toggleAuthMode() {
+    isSignUpMode = !isSignUpMode;
+    document.getElementById('authTitle').innerText = isSignUpMode ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
+    document.getElementById('authSubmitBtn').innerText = isSignUpMode ? 'إنشاء الحساب' : 'دخول';
+    document.getElementById('authSwitchText').innerText = isSignUpMode ? 'لديك حساب بالفعل؟ ' : 'ليس لديك حساب؟ ';
+    document.getElementById('authSwitchLink').innerText = isSignUpMode ? 'سجل الدخول' : 'أنشئ حساباً الآن';
+    document.getElementById('authError').style.display = 'none';
+  }
+
+  // معالجة تسجيل الدخول أو إنشاء الحساب
+  async function handleAuthSubmit() {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    const errorDiv = document.getElementById('authError');
+    const submitBtn = document.getElementById('authSubmitBtn');
+
+    if (!email || !password) {
+      errorDiv.innerText = 'يرجى إدخال البريد الإلكتروني وكلمة المرور';
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    submitBtn.innerText = 'جاري المعالجة...';
+    submitBtn.disabled = true;
+
+    try {
+      if (isSignUpMode) {
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        if (error) throw error;
+        alert('تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.');
+        toggleAuthMode(); // العودة لوضع تسجيل الدخول
+      } else {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        currentUser = data.user;
+        closeModal('authModal');
+        updateUIForUser();
+      }
+    } catch (error) {
+      errorDiv.innerText = error.message;
+      errorDiv.style.display = 'block';
+    } finally {
+      submitBtn.innerText = isSignUpMode ? 'إنشاء الحساب' : 'دخول';
+      submitBtn.disabled = false;
+    }
+  }
+
+  async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    currentUser = null;
+    closeModal('profileModal');
+    updateUIForUser();
+    showPage('home');
+  }
+
+  function checkAuthForWallet() {
+    if (!currentUser) {
+      alert('يجب عليك تسجيل الدخول أولاً لشحن رصيدك!');
+      openAuthModal();
+    } else {
+      alert('سيتم تفعيل نظام شحن الرصيد قريباً!');
     }
   }
 
@@ -160,9 +337,7 @@
 
   async function loadProducts() {
     if(!supabaseClient) return;
-    
     const { data: products, error } = await supabaseClient.from('products').select('*');
-    
     if (error) {
        document.getElementById('error-box').style.display = 'block';
        document.getElementById('error-box').innerText = 'خطأ في جلب المنتجات: ' + error.message;
@@ -179,11 +354,8 @@
         const card = createProductCard(product);
         if (product.category === 'games' || product.category === 'apps') gamesGrid.appendChild(createProductCard(product));
         else if (product.category === 'accounts_ff' || product.category === 'accounts_efootball') accountsGrid.appendChild(createProductCard(product));
-        
         if(index < 3) homeGrid.appendChild(createProductCard(product));
       });
-    } else {
-      homeGrid.innerHTML = '<p style="text-align:center; width:100%;">لا توجد منتجات حالياً.</p>';
     }
   }
 
@@ -194,9 +366,18 @@
       <h3>${product.name}</h3>
       <p>${product.description}</p>
       <div class="price">${product.price} DA</div>
-      <button class="btn" onclick="openPayment('${product.name}', '${product.category}')">شراء</button>
+      <button class="btn" onclick="handleBuy('${product.name}', '${product.category}')">شراء</button>
     `;
     return div;
+  }
+
+  function handleBuy(productName, type) {
+    if (!currentUser) {
+      alert('يجب عليك تسجيل الدخول أو إنشاء حساب لإتمام عملية الشراء!');
+      openAuthModal();
+      return;
+    }
+    openPayment(productName, type);
   }
 
   function openPayment(productName, type) {
@@ -219,12 +400,10 @@
     document.getElementById('paymentModal').style.display = 'grid';
   }
 
-  function closeModal() { document.getElementById('paymentModal').style.display = 'none'; }
-
   function sendToWhatsApp(productName, paymentMethod) {
-    const message = encodeURIComponent(`مرحباً GDX CHEF،\nأريد شراء: ${productName}\nطريقة الدفع المختارة: ${paymentMethod}`);
+    const message = encodeURIComponent(`مرحباً GDX CHEF،\nأريد شراء: ${productName}\nطريقة الدفع المختارة: ${paymentMethod}\nبريدي الإلكتروني: ${currentUser.email}`);
     window.open(`https://wa.me/213562159983?text=${message}`, '_blank');
-    closeModal();
+    closeModal('paymentModal');
   }
 </script>
 </body>
