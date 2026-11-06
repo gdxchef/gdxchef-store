@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GDX CHEF STORE</title>
+<title>GDX CHEF STORE | متجر شحن الألعاب</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --gold:#D4AF37; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; }
+  :root { --gold:#D4AF37; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; --yellow:#f39c12; }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
   body { background:var(--bg); color:var(--text); line-height: 1.6; font-size: 14px; }
   
   header { background: rgba(10,10,10,0.95); border-bottom: 1px solid rgba(212,175,55,0.2); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
   .logo-area { color: var(--gold); font-weight: 900; font-size: 1.1rem; }
-  nav { display: flex; gap: 12px; align-items: center; }
-  nav a { color: var(--text); text-decoration: none; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+  nav { display: flex; gap: 12px; align-items: center; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
+  nav::-webkit-scrollbar { display: none; }
+  nav a { color: var(--text); text-decoration: none; font-size: 0.85rem; font-weight: 700; cursor: pointer; padding: 5px 0; }
   nav a.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
   .user-icon { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid var(--gold); display: grid; place-items: center; cursor: pointer; }
   .user-icon svg { width: 18px; height: 18px; fill: var(--gold); }
@@ -23,6 +24,7 @@
   .container { max-width: 1000px; margin: 0 auto; padding: 20px 15px; }
   .page-section { display: none; }
   .page-section.active { display: block; }
+  
   .hero { background: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1600') center/cover; border-radius: 15px; padding: 60px 20px; text-align: center; position: relative; border: 1px solid var(--gold); margin-bottom: 30px; }
   .hero::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.8); border-radius: 15px; }
   .hero-content { position: relative; z-index: 2; }
@@ -40,6 +42,13 @@
   .product-info p { color: var(--muted); font-size: 0.75rem; margin-bottom: 10px; flex-grow: 1; }
   .price { font-size: 1.1rem; font-weight: 900; margin-bottom: 10px; }
   .btn { background: var(--gold); color: #000; border: none; cursor: pointer; padding: 8px; border-radius: 8px; font-weight: 700; width: 100%; font-family: inherit; font-size: 0.85rem; }
+
+  /* بطاقات طلبات الزبون */
+  .order-history-card { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+  .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+  .status-pending { background: var(--yellow); color: #000; }
+  .status-approved { background: #25D366; color: #fff; }
+  .status-rejected { background: #ff4d4d; color: #fff; }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; place-items: center; }
   .modal-content { background: var(--card); border: 1px solid var(--gold); border-radius: 15px; padding: 25px 20px; width: 90%; max-width: 380px; text-align: center; position: relative; }
@@ -62,6 +71,7 @@
     <a onclick="showPage('home')" class="active" id="nav-home">الرئيسية</a>
     <a onclick="showPage('games')" id="nav-games">شحن الألعاب</a>
     <a onclick="showPage('accounts')" id="nav-accounts">حسابات</a>
+    <a onclick="showPage('myOrders')" id="nav-myOrders">طلباتي</a>
   </nav>
   <div class="user-icon" id="userIconBtn" onclick="handleUserIconClick()">
     <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -76,8 +86,14 @@
   </div>
   <div id="page-games" class="page-section"><h2 class="section-title">شحن الألعاب</h2><div class="products-grid" id="games-products"></div></div>
   <div id="page-accounts" class="page-section"><h2 class="section-title">حسابات</h2><div class="products-grid" id="accounts-products"></div></div>
+  
+  <div id="page-myOrders" class="page-section">
+    <h2 class="section-title">طلباتي</h2>
+    <div id="my-orders-list"></div>
+  </div>
 </div>
 
+<!-- نافذة الدفع -->
 <div class="modal-overlay" id="paymentModal">
   <div class="modal-content">
     <button class="close-btn" onclick="closeModal('paymentModal')">&times;</button>
@@ -87,16 +103,24 @@
   </div>
 </div>
 
+<!-- نافذة رفع الوصل -->
 <div class="modal-overlay" id="receiptModal">
   <div class="modal-content">
     <button class="close-btn" onclick="closeModal('receiptModal')">&times;</button>
     <h2 style="color:var(--gold); margin-bottom: 15px;">إتمام الطلب</h2>
+    
+    <div class="input-group" id="gameIdGroup" style="display: none;">
+      <label>أدخل الآيدي (ID) الخاص باللعبة</label>
+      <input type="text" id="gameIdInput" placeholder="مثلاً 123456789">
+    </div>
+
     <div class="input-group"><label>المبلغ المدفوع</label><input type="text" id="receiptAmount" placeholder="مثلاً 1000"></div>
     <div class="input-group"><label>صورة الوصل</label><input type="file" id="receiptFile" accept="image/*" style="padding: 8px;"></div>
     <button class="btn" id="submitReceiptBtn" onclick="submitReceipt()">تأكيد الطلب</button>
   </div>
 </div>
 
+<!-- نافذة تسجيل الدخول -->
 <div class="modal-overlay" id="authModal">
   <div class="modal-content">
     <button class="close-btn" onclick="closeModal('authModal')">&times;</button>
@@ -109,6 +133,7 @@
   </div>
 </div>
 
+<!-- نافذة الملف الشخصي -->
 <div class="modal-overlay" id="profileModal">
   <div class="modal-content">
     <button class="close-btn" onclick="closeModal('profileModal')">&times;</button>
@@ -126,13 +151,13 @@
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY294Zm1kbWNqb2Zzd21na2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MjMzMTYsImV4cCI6MjEwOTQ5OTMxNn0.H2At_v8QhrO89001o-y0nV0sXf3Ve6nSgUcqI3RtEq8';
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   let currentUser = null; let isSignUpMode = false;
-  let currentOrderProduct = ""; let currentOrderMethod = "";
+  let currentOrderProduct = ""; let currentOrderMethod = ""; let isTopUp = false;
 
   function initApp() { checkSession(); loadProducts(); }
 
   async function checkSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if(session) { currentUser = session.user; updateUI(); }
+    if(session) { currentUser = session.user; updateUI(); loadMyOrders(); }
   }
   function updateUI() { document.getElementById('userIconBtn').classList.toggle('logged-in', !!currentUser); }
 
@@ -167,19 +192,20 @@
       } else {
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        currentUser = data.user; closeModal('authModal'); updateUI();
+        currentUser = data.user; closeModal('authModal'); updateUI(); loadMyOrders();
       }
     } catch (error) { errorDiv.innerText = error.message; errorDiv.style.display = 'block'; } 
     finally { submitBtn.innerText = isSignUpMode ? 'إنشاء' : 'دخول'; submitBtn.disabled = false; }
   }
 
-  async function handleLogout() { await supabaseClient.auth.signOut(); currentUser = null; closeModal('profileModal'); updateUI(); }
+  async function handleLogout() { await supabaseClient.auth.signOut(); currentUser = null; closeModal('profileModal'); updateUI(); showPage('home'); }
 
   function showPage(pageId) {
     document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('nav a').forEach(el => el.classList.remove('active'));
     document.getElementById('page-' + pageId).classList.add('active');
     document.getElementById('nav-' + pageId).classList.add('active');
+    if (pageId === 'myOrders') loadMyOrders();
   }
 
   async function loadProducts() {
@@ -207,6 +233,7 @@
   function handleBuy(productName, type) {
     if (!currentUser) { alert('سجل الدخول أولاً!'); document.getElementById('authModal').style.display = 'grid'; return; }
     currentOrderProduct = productName;
+    isTopUp = (type === 'games' || type === 'apps'); // إذا كان شحن، نطلب الآيدي
     document.getElementById('modal-product-name').innerText = productName;
     const optionsContainer = document.getElementById('payment-options');
     optionsContainer.innerHTML = type === 'accounts_ff' || type === 'accounts_efootball' 
@@ -216,25 +243,71 @@
   }
 
   function selectPayment(method) {
-    currentOrderMethod = method; closeModal('paymentModal'); document.getElementById('receiptModal').style.display = 'grid';
+    currentOrderMethod = method; closeModal('paymentModal'); 
+    document.getElementById('gameIdGroup').style.display = isTopUp ? 'block' : 'none';
+    document.getElementById('receiptModal').style.display = 'grid';
   }
 
   async function submitReceipt() {
     const amount = document.getElementById('receiptAmount').value;
+    const gameId = document.getElementById('gameIdInput').value;
     const file = document.getElementById('receiptFile').files[0];
     const submitBtn = document.getElementById('submitReceiptBtn');
+    
     if (!amount || !file) { alert('أدخل المبلغ وارفع الصورة'); return; }
+    if (isTopUp && !gameId) { alert('أدخل الآيدي الخاص باللعبة'); return; }
+
     submitBtn.innerText = 'جاري...'; submitBtn.disabled = true;
     try {
       const fileName = `${Date.now()}_${currentUser.email.split('@')[0]}.${file.name.split('.').pop()}`;
       let { error: uploadError } = await supabaseClient.storage.from('receipts').upload(fileName, file);
       if (uploadError) throw uploadError;
       const { data: urlData } = supabaseClient.storage.from('receipts').getPublicUrl(fileName);
-      const { error: dbError } = await supabaseClient.from('orders').insert({ user_email: currentUser.email, product_name: currentOrderProduct, payment_method: currentOrderMethod, amount_paid: amount, receipt_url: urlData.publicUrl });
+      
+      const { error: dbError } = await supabaseClient.from('orders').insert({ 
+        user_email: currentUser.email, 
+        product_name: currentOrderProduct, 
+        payment_method: currentOrderMethod, 
+        amount_paid: amount, 
+        receipt_url: urlData.publicUrl,
+        game_id: isTopUp ? gameId : null
+      });
       if (dbError) throw dbError;
-      alert('تم إرسال الطلب!'); closeModal('receiptModal'); document.getElementById('receiptAmount').value = ''; document.getElementById('receiptFile').value = '';
+      
+      alert('تم إرسال الطلب! سنراجعه قريباً.'); 
+      closeModal('receiptModal'); 
+      document.getElementById('receiptAmount').value = ''; 
+      document.getElementById('receiptFile').value = '';
+      document.getElementById('gameIdInput').value = '';
+      loadMyOrders();
     } catch (error) { alert('خطأ: ' + error.message); } 
     finally { submitBtn.innerText = 'تأكيد الطلب'; submitBtn.disabled = false; }
+  }
+
+  async function loadMyOrders() {
+    if (!currentUser) return;
+    const { data: orders, error } = await supabaseClient.from('orders').select('*').eq('user_email', currentUser.email).order('created_at', { ascending: false });
+    if (error) return;
+
+    const list = document.getElementById('my-orders-list');
+    list.innerHTML = '';
+    if (orders.length === 0) { list.innerHTML = '<p style="text-align:center; color:var(--muted);">لا توجد طلبات سابقة.</p>'; return; }
+
+    orders.forEach(order => {
+      let statusClass = order.status === 'pending' ? 'status-pending' : (order.status === 'approved' ? 'status-approved' : 'status-rejected');
+      let statusText = order.status === 'pending' ? 'قيد الانتظار' : (order.status === 'approved' ? 'مقبول' : 'مرفوض');
+      
+      const card = document.createElement('div');
+      card.className = 'order-history-card';
+      card.innerHTML = `
+        <div class="status-badge ${statusClass}">${statusText}</div>
+        <h3 style="color: var(--gold); margin-bottom: 5px;">${order.product_name}</h3>
+        <p style="color: var(--muted); font-size: 0.9rem;">طريقة الدفع: ${order.payment_method} | المبلغ: ${order.amount_paid}</p>
+        ${order.game_id ? `<p style="color: var(--gold-soft); font-size: 0.9rem; font-weight: bold;">الآيدي: ${order.game_id}</p>` : ''}
+        ${order.rejection_reason ? `<p style="color: #ff4d4d; margin-top: 5px; font-size: 0.9rem;">سبب الرفض: ${order.rejection_reason}</p>` : ''}
+      `;
+      list.appendChild(card);
+    });
   }
 </script>
 </body>
