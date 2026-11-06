@@ -6,69 +6,90 @@
 <title>GDX CHEF STORE | متجر شحن الألعاب</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --gold:#D4AF37; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; --yellow:#f39c12; --green:#25D366; }
+  :root { --gold:#D4AF37; --gold-hover:#F3E5AB; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; --yellow:#f39c12; --green:#25D366; }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
   body { background:var(--bg); color:var(--text); line-height: 1.6; font-size: 14px; }
   
-  header { background: rgba(10,10,10,0.95); border-bottom: 1px solid rgba(212,175,55,0.2); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  /* شريط التنقل */
+  header { background: rgba(10,10,10,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(212,175,55,0.2); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
   .logo-area { color: var(--gold); font-weight: 900; font-size: 1.1rem; }
   nav { display: flex; gap: 12px; align-items: center; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
   nav::-webkit-scrollbar { display: none; }
-  nav a { color: var(--text); text-decoration: none; font-size: 0.85rem; font-weight: 700; cursor: pointer; padding: 5px 0; }
-  nav a.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
-  .user-icon { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid var(--gold); display: grid; place-items: center; cursor: pointer; }
-  .user-icon svg { width: 18px; height: 18px; fill: var(--gold); }
+  nav a { color: var(--text); text-decoration: none; font-size: 0.85rem; font-weight: 700; cursor: pointer; padding: 5px 0; transition: color 0.3s; }
+  nav a:hover, nav a.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+  .user-icon { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid var(--gold); display: grid; place-items: center; cursor: pointer; transition: 0.3s; }
+  .user-icon:hover { background: var(--gold); }
+  .user-icon svg { width: 18px; height: 18px; fill: var(--gold); transition: 0.3s; }
+  .user-icon:hover svg { fill: #000; }
   .user-icon.logged-in { border-color: var(--green); }
   .user-icon.logged-in svg { fill: var(--green); }
 
   .container { max-width: 1000px; margin: 0 auto; padding: 20px 15px; }
-  .page-section { display: none; }
+  .page-section { display: none; animation: fadeIn 0.5s ease; }
   .page-section.active { display: block; }
-  
-  .hero { background: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1600') center/cover; border-radius: 15px; padding: 60px 20px; text-align: center; position: relative; border: 1px solid var(--gold); margin-bottom: 30px; }
-  .hero::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.8); border-radius: 15px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* الهيرو */
+  .hero { background: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1600') center/cover; border-radius: 15px; padding: 60px 20px; text-align: center; position: relative; border: 1px solid var(--gold); margin-bottom: 30px; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.85); border-radius: 15px; }
   .hero-content { position: relative; z-index: 2; }
   .hero h1 { color: var(--gold); font-size: 1.8rem; margin-bottom: 10px; }
   .hero p { color: #ddd; margin-bottom: 20px; }
-  .hero-btn { background: var(--gold); color: #000; padding: 10px 25px; border-radius: 30px; font-weight: 900; border: none; cursor: pointer; }
+  .hero-btn { background: linear-gradient(45deg, #D4AF37, #F3E5AB); color: #000; padding: 12px 30px; border-radius: 30px; font-weight: 900; border: none; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(212,175,55,0.4); }
+  .hero-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(212,175,55,0.6); }
 
+  /* العناوين */
   .section-title { text-align: center; color: var(--text); margin-bottom: 20px; font-size: 1.3rem; font-weight: 900; border-bottom: 2px solid var(--gold); display: inline-block; position: relative; right: 50%; transform: translateX(50%); padding-bottom: 5px; }
-  .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  /* شبكة المنتجات */
+  .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
   @media (min-width: 768px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
-  .product-card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-  .product-img { width: 100%; height: 120px; object-fit: cover; }
-  .product-info { padding: 12px; text-align: center; display: flex; flex-direction: column; flex-grow: 1; }
-  .product-info h3 { color: var(--gold); font-size: 0.95rem; margin-bottom: 5px; }
-  .product-info p { color: var(--muted); font-size: 0.75rem; margin-bottom: 10px; flex-grow: 1; }
-  .price { font-size: 1.1rem; font-weight: 900; margin-bottom: 10px; }
-  .btn { background: var(--gold); color: #000; border: none; cursor: pointer; padding: 8px; border-radius: 8px; font-weight: 700; width: 100%; font-family: inherit; font-size: 0.85rem; }
-  .btn-green { background: var(--green); color: #fff; }
+  .product-card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s; }
+  .product-card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+  .product-img { width: 100%; height: 140px; object-fit: cover; }
+  .product-info { padding: 15px; text-align: center; display: flex; flex-direction: column; flex-grow: 1; }
+  .product-info h3 { color: var(--gold); font-size: 1rem; margin-bottom: 5px; }
+  .product-info p { color: var(--muted); font-size: 0.8rem; margin-bottom: 10px; flex-grow: 1; }
+  .price { font-size: 1.2rem; font-weight: 900; margin-bottom: 15px; color: var(--gold-hover); }
+  .btn { background: linear-gradient(45deg, #D4AF37, #F3E5AB); color: #000; border: none; cursor: pointer; padding: 10px; border-radius: 8px; font-weight: 700; width: 100%; font-family: inherit; font-size: 0.9rem; transition: 0.3s; }
+  .btn:hover { opacity: 0.9; transform: scale(1.02); }
+  .btn-green { background: linear-gradient(45deg, #25D366, #1ebe5a); color: #fff; }
   .btn-gray { background: #444; color: #fff; }
 
-  .order-history-card { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+  /* طلباتي */
+  .order-history-card { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; animation: fadeIn 0.5s; }
   .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
   .status-pending { background: var(--yellow); color: #000; }
   .status-approved { background: var(--green); color: #fff; }
   .status-rejected { background: #ff4d4d; color: #fff; }
 
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; place-items: center; }
-  .modal-content { background: var(--card); border: 1px solid var(--gold); border-radius: 15px; padding: 25px 20px; width: 90%; max-width: 420px; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
-  .close-btn { position: absolute; top: 10px; left: 15px; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+  /* النوافذ المنبثقة */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; place-items: center; backdrop-filter: blur(5px); }
+  .modal-content { background: var(--card); border: 1px solid var(--gold); border-radius: 15px; padding: 25px 20px; width: 90%; max-width: 420px; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .close-btn { position: absolute; top: 10px; left: 15px; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+  .close-btn:hover { color: var(--gold); }
   
-  .pay-btn { width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; color: #fff; }
-  .pay-flexy { background: #ff6b00; } .pay-ccp { background: #0055a4; } .pay-binance { background: #f3ba2f; color: #000; }
+  .pay-btn { width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; color: #fff; transition: 0.3s; }
+  .pay-btn:hover { transform: scale(1.02); }
+  .pay-flexy { background: linear-gradient(45deg, #ff6b00, #ff8c33); } 
+  .pay-ccp { background: linear-gradient(45deg, #0055a4, #0077e6); } 
+  .pay-binance { background: linear-gradient(45deg, #f3ba2f, #f7d15d); color: #000; }
   
   /* صندوق معلومات الدفع */
-  .payment-info-box { background: #111; border: 1px solid var(--gold); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: right; font-size: 0.9rem; }
+  .payment-info-box { background: #111; border: 1px solid var(--gold); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: right; font-size: 0.9rem; animation: fadeIn 0.5s; }
   .payment-info-box h4 { color: var(--gold); margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-  .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: #000; padding: 5px 8px; border-radius: 4px; border: 1px solid #222; }
+  .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: #000; padding: 8px; border-radius: 6px; border: 1px solid #222; }
   .info-row span { color: var(--gold-soft); font-weight: bold; font-family: monospace; font-size: 1rem; }
-  .copy-btn { background: var(--gold); color: #000; border: none; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; margin-right: 5px; }
+  .copy-btn { background: var(--gold); color: #000; border: none; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; transition: 0.3s; }
+  .copy-btn:hover { background: var(--gold-hover); }
   .warning-text { color: #ff4d4d; font-weight: bold; font-size: 0.85rem; margin-top: 10px; text-align: center; border-top: 1px dashed #444; padding-top: 8px; }
 
+  /* الحقول */
   .input-group { margin-bottom: 15px; text-align: right; }
   .input-group label { display: block; margin-bottom: 5px; color: var(--gold); font-weight: 700; }
-  .input-group input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
+  .input-group input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; transition: 0.3s; }
+  .input-group input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 10px rgba(212,175,55,0.2); }
   .note-text { color: var(--muted); font-size: 0.8rem; margin-top: 5px; }
   
   .error-msg { background: rgba(255,0,0,0.1); color: #ff4d4d; padding: 8px; border-radius: 6px; margin-bottom: 15px; display: none; }
@@ -117,7 +138,6 @@
     <button class="close-btn" onclick="closeModal('receiptModal')">&times;</button>
     <h2 style="color:var(--gold); margin-bottom: 15px;">إتمام الطلب</h2>
     
-    <!-- صندوق معلومات الدفع -->
     <div id="paymentDetails" class="payment-info-box"></div>
 
     <div class="input-group" id="gameIdGroup" style="display: none;">
@@ -184,10 +204,8 @@
   function updateUI() { document.getElementById('userIconBtn').classList.toggle('logged-in', !!currentUser); }
 
   function handleUserIconClick() {
-    if (currentUser) {
-      document.getElementById('profileEmail').innerText = currentUser.email;
-      document.getElementById('profileModal').style.display = 'grid';
-    } else { document.getElementById('authModal').style.display = 'grid'; }
+    if (currentUser) { document.getElementById('profileEmail').innerText = currentUser.email; document.getElementById('profileModal').style.display = 'grid'; } 
+    else { document.getElementById('authModal').style.display = 'grid'; }
   }
 
   function closeModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -283,7 +301,8 @@
       } else if (method === 'CCP') {
         box.innerHTML = `<h4>الدفع عبر CCP / BaridiMob</h4>
           <p>الاسم: <strong>${currentSettings.ccp_name}</strong></p>
-          <p>CCP: <strong>${currentSettings.ccp_rib}</strong> | المفتاح: <strong>${currentSettings.ccp_key}</strong></p>
+          <p>CCP: <strong>${currentSettings.ccp_number}</strong></p>
+          <p>المفتاح: <strong>${currentSettings.ccp_key}</strong></p>
           <div class="info-row" style="margin-top:10px;"><span>${currentSettings.ccp_rib}</span><button class="copy-btn" onclick="copyToClipboard('${currentSettings.ccp_rib}')">نسخ RIB</button></div>
           <div class="warning-text">📌 ملاحظة: الدفع عبر هاته الطريقة يتوقف على الساعة 9 ليلا</div>`;
       } else if (method === 'Binance') {
@@ -317,20 +336,12 @@
       const { data: urlData } = supabaseClient.storage.from('receipts').getPublicUrl(fileName);
       
       const { error: dbError } = await supabaseClient.from('orders').insert({ 
-        user_email: currentUser.email, 
-        product_name: currentOrderProduct, 
-        payment_method: currentOrderMethod, 
-        amount_paid: amount, 
-        receipt_url: urlData.publicUrl,
-        game_id: isTopUp ? gameId : null
+        user_email: currentUser.email, product_name: currentOrderProduct, payment_method: currentOrderMethod, amount_paid: amount, receipt_url: urlData.publicUrl, game_id: isTopUp ? gameId : null
       });
       if (dbError) throw dbError;
       
-      alert('تم إرسال الطلب! سنراجعه قريباً.'); 
-      closeModal('receiptModal'); 
-      document.getElementById('receiptAmount').value = ''; 
-      document.getElementById('receiptFile').value = '';
-      document.getElementById('gameIdInput').value = '';
+      alert('تم إرسال الطلب! سنراجعه قريباً.'); closeModal('receiptModal'); 
+      document.getElementById('receiptAmount').value = ''; document.getElementById('receiptFile').value = ''; document.getElementById('gameIdInput').value = '';
       loadMyOrders();
     } catch (error) { alert('خطأ: ' + error.message); } 
     finally { submitBtn.innerText = 'تأكيد الطلب'; submitBtn.disabled = false; }
@@ -348,7 +359,6 @@
     orders.forEach(order => {
       let statusClass = order.status === 'pending' ? 'status-pending' : (order.status === 'approved' ? 'status-approved' : 'status-rejected');
       let statusText = order.status === 'pending' ? 'قيد الانتظار' : (order.status === 'approved' ? 'مقبول' : 'مرفوض');
-      
       const card = document.createElement('div');
       card.className = 'order-history-card';
       card.innerHTML = `
