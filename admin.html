@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة تحكم GDX CHEF</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --gold:#D4AF37; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+  body { background:var(--bg); color:var(--text); line-height: 1.6; }
+  
+  /* شاشة تسجيل الدخول للمدير */
+  #login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--bg); }
+  .login-box { background: var(--card); border: 1px solid var(--gold); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
+  .login-box h2 { color: var(--gold); margin-bottom: 20px; }
+  .login-box input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
+  .login-box button { width: 100%; padding: 10px; background: var(--gold); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+  /* لوحة التحكم */
+  #dashboard { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+  header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+  header h1 { color: var(--gold); font-size: 1.5rem; }
+  .logout-btn { background: #ff4d4d; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+  /* بطاقات الطلبات */
+  .order-card { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+  .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .order-header h3 { color: var(--gold); font-size: 1.1rem; }
+  .status { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+  .status.pending { background: #ffc107; color: #000; }
+  .status.approved { background: #25D366; color: #fff; }
+  .status.rejected { background: #ff4d4d; color: #fff; }
+
+  .order-details { font-size: 0.9rem; color: var(--muted); margin-bottom: 10px; }
+  .order-details strong { color: var(--text); }
+  .order-actions { display: flex; gap: 10px; margin-top: 10px; }
+  .order-actions button { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  .btn-approve { background: #25D366; color: #fff; }
+  .btn-reject { background: #ff4d4d; color: #fff; }
+  .receipt-img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin-top: 10px; border: 1px solid #333; cursor: pointer; }
+  .error-msg { color: #ff4d4d; font-size: 0.9rem; margin-bottom: 10px; display: none; }
+</style>
+</head>
+<body>
+
+<!-- شاشة تسجيل الدخول -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>لوحة تحكم GDX CHEF</h2>
+    <p style="color:var(--muted); margin-bottom: 15px; font-size: 0.9rem;">أدخل بريدك الإلكتروني المسجل كمدير</p>
+    <div id="loginError" class="error-msg"></div>
+    <input type="email" id="adminEmail" placeholder="البريد الإلكتروني">
+    <input type="password" id="adminPassword" placeholder="كلمة المرور">
+    <button onclick="adminLogin()">دخول</button>
+  </div>
+</div>
+
+<!-- لوحة التحكم -->
+<div id="dashboard">
+  <header>
+    <h1>لوحة التحكم</h1>
+    <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+  </header>
+  <h2 style="color:var(--gold); margin-bottom: 15px;">الطلبات الجديدة</h2>
+  <div id="orders-list"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://focoxfmdmcjofswmgkco.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY294Zm1kbWNqb2Zzd21na2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MjMzMTYsImV4cCI6MjEwOTQ5OTMxNn0.H2At_v8QhrO89001o-y0nV0sXf3Ve6nSgUcqI3RtEq8';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function adminLogin() {
+    const email = document.getElementById('adminEmail').value;
+    const password = document.getElementById('adminPassword').value;
+    const errorDiv = document.getElementById('loginError');
+    errorDiv.style.display = 'none';
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) { errorDiv.innerText = 'خطأ: ' + error.message; errorDiv.style.display = 'block'; return; }
+
+    if (data.user.email === 'chefgdx@gmail.com') { // يمكنك تغيير هذا البريد إلى بريدك
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadOrders();
+    } else {
+      alert('عذراً، هذا الحساب ليس لديه صلاحيات المدير!');
+      await supabaseClient.auth.signOut();
+    }
+  }
+
+  async function logout() {
+    await supabaseClient.auth.signOut();
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  async function loadOrders() {
+    const { data: orders, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+    if (error) { alert('خطأ في جلب الطلبات: ' + error.message); return; }
+    
+    const list = document.getElementById('orders-list');
+    list.innerHTML = '';
+
+    if (!orders || orders.length === 0) {
+      list.innerHTML = '<p style="text-align:center; color:var(--muted);">لا توجد طلبات حالياً.</p>';
+      return;
+    }
+
+    orders.forEach(order => {
+      const card = document.createElement('div');
+      card.className = 'order-card';
+      
+      let statusClass = order.status === 'pending' ? 'pending' : (order.status === 'approved' ? 'approved' : 'rejected');
+      let statusText = order.status === 'pending' ? 'قيد الانتظار' : (order.status === 'approved' ? 'مقبول' : 'مرفوض');
+
+      card.innerHTML = `
+        <div class="order-header">
+          <h3>${order.product_name}</h3>
+          <span class="status ${statusClass}">${statusText}</span>
+        </div>
+        <div class="order-details">
+          <p><strong>الزبون:</strong> ${order.user_email}</p>
+          <p><strong>طريقة الدفع:</strong> ${order.payment_method}</p>
+          <p><strong>المبلغ:</strong> ${order.amount_paid}</p>
+          <p><strong>التاريخ:</strong> ${new Date(order.created_at).toLocaleString('ar-DZ')}</p>
+        </div>
+        ${order.receipt_url ? `<img src="${order.receipt_url}" class="receipt-img" onclick="window.open(this.src)" title="اضغط لرؤية الوصل">` : ''}
+        ${order.status === 'pending' ? `<div class="order-actions"><button class="btn-approve" onclick="updateOrderStatus(${order.id}, 'approved')">قبول الطلب</button><button class="btn-reject" onclick="updateOrderStatus(${order.id}, 'rejected')">رفض الطلب</button></div>` : ''}
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  async function updateOrderStatus(orderId, newStatus) {
+    const confirmMsg = newStatus === 'approved' ? 'هل أنت متأكد من قبول الطلب؟' : 'هل أنت متأكد من رفض الطلب؟';
+    if (!confirm(confirmMsg)) return;
+
+    const { error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
+    if (error) { alert('خطأ: ' + error.message); return; }
+    
+    alert('تم تحديث حالة الطلب!');
+    loadOrders();
+  }
+</script>
+</body>
+</html>
