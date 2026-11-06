@@ -6,7 +6,7 @@
 <title>لوحة تحكم GDX CHEF</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --gold:#D4AF37; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; --yellow:#f39c12; }
+  :root { --gold:#D4AF37; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; --yellow:#f39c12; --green:#25D366; }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
   body { background:var(--bg); color:var(--text); line-height: 1.6; }
   
@@ -32,14 +32,14 @@
   .order-header h3 { color: var(--gold); font-size: 1.1rem; }
   .status { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
   .status.pending { background: var(--yellow); color: #000; }
-  .status.approved { background: #25D366; color: #fff; }
+  .status.approved { background: var(--green); color: #fff; }
   .status.rejected { background: #ff4d4d; color: #fff; }
 
   .order-details { font-size: 0.9rem; color: var(--muted); margin-bottom: 10px; }
   .order-details strong { color: var(--text); }
   .order-actions { display: flex; gap: 10px; margin-top: 10px; }
   .order-actions button { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-  .btn-approve { background: #25D366; color: #fff; }
+  .btn-approve { background: var(--green); color: #fff; }
   .btn-reject { background: #ff4d4d; color: #fff; }
   .receipt-img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin-top: 10px; border: 1px solid #333; cursor: pointer; }
   .reject-input { width: 100%; padding: 8px; margin-top: 10px; border-radius: 6px; border: 1px solid #ff4d4d; background: #000; color: #fff; display: none; }
