@@ -3,288 +3,287 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
 <title>لوحة تحكم GDX CHEF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --gold:#D4AF37; --bg:#0a0a0a; --card:#141414; --text:#F5F5F5; --muted:#A0A0A0; --yellow:#f39c12; --green:#25D366; }
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-  body { background:var(--bg); color:var(--text); line-height: 1.6; }
-  
-  #login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--bg); }
-  .login-box { background: var(--card); border: 1px solid var(--gold); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
-  .login-box h2 { color: var(--gold); margin-bottom: 20px; }
-  .login-box input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
-  .login-box button { width: 100%; padding: 10px; background: var(--gold); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-
-  #dashboard { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; }
-  header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-  header h1 { color: var(--gold); font-size: 1.5rem; }
-  .logout-btn { background: #ff4d4d; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-
-  .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
-  .tab-btn { background: #222; color: var(--text); border: 1px solid #333; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap; transition: 0.3s; }
-  .tab-btn:hover { background: #333; }
-  .tab-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
-  .content-section { display: none; animation: fadeIn 0.3s; }
-  .content-section.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  /* إعدادات الدفع */
-  .settings-group { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-  .settings-group h3 { color: var(--gold); margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-  .input-group { margin-bottom: 15px; }
-  .input-group label { display: block; margin-bottom: 5px; color: var(--text); }
-  .input-group input, .input-group select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; transition: 0.3s; }
-  .input-group input:focus { outline: none; border-color: var(--gold); }
-  .save-btn { background: linear-gradient(45deg, #D4AF37, #F3E5AB); color: #000; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
-  .save-btn:hover { transform: scale(1.02); }
-
-  /* المنتجات */
-  .product-item { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-  .product-item:hover { border-color: var(--gold); }
-  .product-item h4 { color: var(--gold); }
-  .product-item .actions { display: flex; gap: 10px; }
-  .btn-delete { background: #ff4d4d; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; transition: 0.3s; }
-  .btn-delete:hover { background: #ff1a1a; }
-
-  /* الطلبات */
-  .order-card { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-  .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-  .order-header h3 { color: var(--gold); font-size: 1.1rem; }
-  .status { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
-  .status.pending { background: var(--yellow); color: #000; }
-  .status.approved { background: var(--green); color: #fff; }
-  .status.rejected { background: #ff4d4d; color: #fff; }
-  .order-details { font-size: 0.9rem; color: var(--muted); margin-bottom: 10px; }
-  .order-details strong { color: var(--text); }
-  .order-actions { display: flex; gap: 10px; margin-top: 10px; }
-  .order-actions button { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-  .btn-approve { background: var(--green); color: #fff; }
-  .btn-reject { background: #ff4d4d; color: #fff; }
-  .receipt-img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin-top: 10px; border: 1px solid #333; cursor: pointer; }
-  .reject-input { width: 100%; padding: 8px; margin-top: 10px; border-radius: 6px; border: 1px solid #ff4d4d; background: #000; color: #fff; display: none; }
-  .error-msg { color: #ff4d4d; font-size: 0.9rem; margin-bottom: 10px; display: none; }
+:root{--gold:#D4AF37;--bg:#0a0a0a;--card:#141414;--line:#2a2a2a;--text:#F5F5F5;--muted:#A0A0A0;--yellow:#f39c12;--green:#25D366;--red:#ff4d4d}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif}
+body{background:var(--bg);color:var(--text);line-height:1.6;font-size:15px}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#login{display:flex;justify-content:center;align-items:center;min-height:100vh;padding:14px}
+.lbox{background:var(--card);border:1px solid var(--gold);padding:28px;border-radius:12px;width:100%;max-width:400px;text-align:center}
+.lbox h2{color:var(--gold);margin-bottom:16px}
+input,select,textarea{width:100%;padding:11px;margin-bottom:10px;border-radius:8px;border:1px solid #333;background:#000;color:#fff}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+.btn{background:linear-gradient(45deg,#D4AF37,#F3E5AB);color:#000;border:0;padding:11px 16px;border-radius:8px;font-weight:700;cursor:pointer;width:100%}
+.btn:disabled{opacity:.6}
+.sm{width:auto;padding:6px 12px;font-size:.85rem;border-radius:6px;border:0;font-weight:700;cursor:pointer;color:#fff}
+.ok{background:var(--green)}.no{background:var(--red)}.gr{background:#444}.gd{background:var(--gold);color:#000}
+.err{color:var(--red);font-size:.9rem;margin-bottom:10px;display:none}
+#app{display:none;padding:16px;max-width:1000px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid #333;padding-bottom:12px}
+.top h1{color:var(--gold);font-size:1.4rem}
+.tabs{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto}
+.tab{background:#222;color:var(--text);border:1px solid #333;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:700;white-space:nowrap}
+.tab.active{background:var(--gold);color:#000;border-color:var(--gold)}
+.tab i{font-style:normal;background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:.75rem;margin-right:5px}
+.sec{display:none}.sec.active{display:block}
+h2.h{color:var(--gold);margin-bottom:12px;font-size:1.15rem}
+.chips{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.chip{background:#1b1b1b;color:var(--text);border:1px solid #333;padding:5px 14px;border-radius:20px;cursor:pointer;font-size:.85rem}
+.chip.active{border-color:var(--gold);color:var(--gold)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.box h3{color:var(--gold);margin-bottom:12px;border-bottom:1px solid #333;padding-bottom:5px}
+label{display:block;margin-bottom:3px;font-size:.88rem}
+.head{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}
+.head h3{color:var(--gold);font-size:1.05rem}
+.st{padding:3px 12px;border-radius:20px;font-size:.78rem;font-weight:700;height:fit-content;white-space:nowrap}
+.st.pending{background:var(--yellow);color:#000}.st.approved{background:var(--green);color:#fff}.st.rejected{background:var(--red);color:#fff}
+.det{font-size:.9rem;color:var(--muted)}.det strong{color:var(--text)}
+.det a{color:var(--green);font-weight:700}
+.acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.acts .sm{flex:1}
+.rimg{width:100%;max-height:240px;object-fit:contain;border-radius:6px;margin-top:10px;border:1px solid #333;cursor:pointer;background:#000}
+.reason{display:none;margin-top:10px;border-color:var(--red)}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.item h4{color:var(--gold)}
+.item small{color:var(--muted)}
+.tag{font-size:.72rem;padding:1px 8px;border-radius:10px;background:var(--red);color:#fff;margin-right:6px}
+.tag.h{background:#555}
+.empty{text-align:center;color:var(--muted);padding:20px}
+#toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;gap:8px;width:92%;max-width:380px}
+.toast{background:#1d1d1d;border:1px solid var(--gold);border-radius:10px;padding:10px 14px;font-weight:700;font-size:.9rem}
+.toast.ok{border-color:var(--green)}.toast.bad{border-color:var(--red)}
 </style>
 </head>
 <body>
+<div id="login"><div class="lbox">
+  <h2>لوحة تحكم GDX CHEF</h2>
+  <div id="lerr" class="err"></div>
+  <input type="email" id="aemail" placeholder="البريد الإلكتروني" autocomplete="username">
+  <input type="password" id="apass" placeholder="كلمة المرور" autocomplete="current-password">
+  <button class="btn" id="loginBtn">دخول</button>
+</div></div>
 
-<div id="login-screen">
-  <div class="login-box">
-    <h2>لوحة تحكم GDX CHEF</h2>
-    <p style="color:var(--muted); margin-bottom: 15px; font-size: 0.9rem;">أدخل بريدك الإلكتروني المسجل كمدير</p>
-    <div id="loginError" class="error-msg"></div>
-    <input type="email" id="adminEmail" placeholder="البريد الإلكتروني">
-    <input type="password" id="adminPassword" placeholder="كلمة المرور">
-    <button onclick="adminLogin()">دخول</button>
+<div id="app">
+  <div class="top"><h1>لوحة التحكم</h1><button class="sm no" id="logout">خروج</button></div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="orders">الطلبات <i id="pendCount" style="display:none"></i></button>
+    <button class="tab" data-tab="products">المنتجات</button>
+    <button class="tab" data-tab="settings">إعدادات الدفع</button>
+  </div>
+
+  <div id="tab-orders" class="sec active">
+    <div class="chips" id="chips">
+      <button class="chip active" data-f="pending">قيد الانتظار</button>
+      <button class="chip" data-f="approved">مقبولة</button>
+      <button class="chip" data-f="rejected">مرفوضة</button>
+      <button class="chip" data-f="all">الكل</button>
+    </div>
+    <div id="orders"></div>
+  </div>
+
+  <div id="tab-products" class="sec">
+    <div class="box">
+      <h3 id="formTitle">إضافة منتج</h3>
+      <label>الاسم</label><input id="pName">
+      <label>الوصف</label><textarea id="pDesc" rows="2"></textarea>
+      <label>السعر (DA)</label><input type="number" id="pPrice" inputmode="decimal" min="0">
+      <label>سعر التخفيض (اختياري)</label><input type="number" id="pDisc" inputmode="decimal" min="0">
+      <label>التصنيف</label>
+      <select id="pCat"><option value="games">شحن ألعاب</option><option value="apps">شحن تطبيقات</option><option value="accounts_ff">حساب Free Fire</option><option value="accounts_efootball">حساب eFOOTBALL</option></select>
+      <label>الصورة الرئيسية (رابط https)</label><input id="pImg" placeholder="https://...">
+      <label>صور إضافية (رابط في كل سطر)</label><textarea id="pImgs" rows="3" placeholder="https://..."></textarea>
+      <div class="acts"><button class="btn" id="saveProduct">حفظ المنتج</button><button class="sm gr" id="cancelEdit" style="display:none">إلغاء التعديل</button></div>
+    </div>
+    <h2 class="h">المنتجات الحالية</h2>
+    <div id="products"></div>
+  </div>
+
+  <div id="tab-settings" class="sec">
+    <div class="box"><h3>Flexy</h3><label>رقم الفليكسي</label><input id="sFlexy"></div>
+    <div class="box"><h3>CCP / BaridiMob</h3>
+      <label>رقم CCP</label><input id="sCcp"><label>المفتاح (Clé)</label><input id="sKey"><label>RIB</label><input id="sRib"><label>الاسم الكامل</label><input id="sName"></div>
+    <div class="box"><h3>Binance</h3><label>ID الحساب</label><input id="sBid"><label>البريد الإلكتروني</label><input id="sBmail"></div>
+    <button class="btn" id="saveSettings">حفظ الإعدادات</button>
   </div>
 </div>
-
-<div id="dashboard">
-  <header>
-    <h1>لوحة التحكم</h1>
-    <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
-  </header>
-
-  <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('orders')">الطلبات</button>
-    <button class="tab-btn" onclick="showTab('products')">إدارة المنتجات</button>
-    <button class="tab-btn" onclick="showTab('settings')">إعدادات الدفع</button>
-  </div>
-
-  <div id="tab-orders" class="content-section active">
-    <h2 style="color:var(--gold); margin-bottom: 15px;">الطلبات الجديدة</h2>
-    <div id="orders-list"></div>
-  </div>
-
-  <div id="tab-products" class="content-section">
-    <h2 style="color:var(--gold); margin-bottom: 15px;">إدارة المنتجات</h2>
-    
-    <div class="settings-group">
-      <h3>إضافة منتج جديد</h3>
-      <div class="input-group"><label>اسم المنتج</label><input type="text" id="pName"></div>
-      <div class="input-group"><label>الوصف</label><input type="text" id="pDesc"></div>
-      <div class="input-group"><label>السعر (DA)</label><input type="number" id="pPrice"></div>
-      <div class="input-group"><label>التصنيف</label>
-        <select id="pCategory">
-          <option value="games">شحن ألعاب</option>
-          <option value="apps">شحن تطبيقات</option>
-          <option value="accounts_ff">حساب Free Fire</option>
-          <option value="accounts_efootball">حساب eFOOTBALL</option>
-        </select>
-      </div>
-      <div class="input-group"><label>رابط الصورة (URL)</label><input type="text" id="pImage" placeholder="https://..."></div>
-      <button class="save-btn" onclick="addProduct()">إضافة المنتج</button>
-    </div>
-
-    <h3 style="color:var(--gold); margin-bottom: 10px;">المنتجات الحالية</h3>
-    <div id="products-list"></div>
-  </div>
-
-  <div id="tab-settings" class="content-section">
-    <h2 style="color:var(--gold); margin-bottom: 15px;">إعدادات الدفع</h2>
-    <div class="settings-group">
-      <h3>Flexy</h3>
-      <div class="input-group"><label>رقم الفليكسي</label><input type="text" id="setFlexy"></div>
-    </div>
-    <div class="settings-group">
-      <h3>CCP / BaridiMob</h3>
-      <div class="input-group"><label>رقم CCP (الحساب)</label><input type="text" id="setCcpNum"></div>
-      <div class="input-group"><label>المفتاح (Clé)</label><input type="text" id="setKey"></div>
-      <div class="input-group"><label>RIB</label><input type="text" id="setRib"></div>
-      <div class="input-group"><label>الاسم الكامل</label><input type="text" id="setName"></div>
-    </div>
-    <div class="settings-group">
-      <h3>Binance</h3>
-      <div class="input-group"><label>ID الحساب</label><input type="text" id="setBinanceId"></div>
-      <div class="input-group"><label>البريد الإلكتروني</label><input type="text" id="setBinanceEmail"></div>
-    </div>
-    <button class="save-btn" onclick="saveSettings()">حفظ التغييرات</button>
-  </div>
-</div>
+<div id="toasts" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const SUPABASE_URL = 'https://focoxfmdmcjofswmgkco.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY294Zm1kbWNqb2Zzd21na2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MjMzMTYsImV4cCI6MjEwOTQ5OTMxNn0.H2At_v8QhrO89001o-y0nV0sXf3Ve6nSgUcqI3RtEq8';
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://focoxfmdmcjofswmgkco.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY294Zm1kbWNqb2Zzd21na2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MjMzMTYsImV4cCI6MjEwOTQ5OTMxNn0.H2At_v8QhrO89001o-y0nV0sXf3Ve6nSgUcqI3RtEq8';
+const ADMIN_EMAIL='chefgdx@gmail.com';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-  window.onload = async function() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session && session.user.email === 'chefgdx@gmail.com') {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      loadOrders(); loadProductsForAdmin(); loadSettingsForForm();
-    }
-  };
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl=u=>/^https:\/\//i.test(u||'')?u:'';
+const money=n=>Number(n||0).toLocaleString('en-US');
+const S={filter:'pending',products:new Map(),editId:null,loaded:false};
+const CATS={games:'شحن ألعاب',apps:'شحن تطبيقات',accounts_ff:'حساب Free Fire',accounts_efootball:'حساب eFOOTBALL'};
 
-  async function adminLogin() {
-    const email = document.getElementById('adminEmail').value;
-    const password = document.getElementById('adminPassword').value;
-    const errorDiv = document.getElementById('loginError');
-    errorDiv.style.display = 'none';
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) { errorDiv.innerText = 'خطأ: ' + error.message; errorDiv.style.display = 'block'; return; }
-    if (data.user.email === 'chefgdx@gmail.com') { 
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      loadOrders(); loadProductsForAdmin(); loadSettingsForForm();
-    } else {
-      alert('عذراً، هذا الحساب ليس لديه صلاحيات المدير!');
-      await supabaseClient.auth.signOut();
-    }
+function toast(m,t=''){const e=document.createElement('div');e.className='toast '+t;e.textContent=m;$('toasts').appendChild(e);setTimeout(()=>e.remove(),3500)}
+
+/* الدخول */
+function showApp(on){$('login').style.display=on?'none':'flex';$('app').style.display=on?'block':'none'}
+async function enter(user){
+  if(user&&user.email===ADMIN_EMAIL){
+    showApp(true);
+    if(!S.loaded){S.loaded=true;loadOrders();loadProducts();loadSettings()}
+  }else{
+    showApp(false);S.loaded=false;
+    if(user){toast('هذا الحساب ليس لديه صلاحيات المدير','bad');await db.auth.signOut()}
   }
+}
+async function login(){
+  const err=$('lerr'),btn=$('loginBtn');err.style.display='none';
+  const email=$('aemail').value.trim(),password=$('apass').value;
+  if(!email||!password){err.textContent='أدخل البريد وكلمة المرور';err.style.display='block';return}
+  btn.disabled=true;
+  const{error}=await db.auth.signInWithPassword({email,password});
+  btn.disabled=false;
+  if(error){err.textContent='تعذر الدخول: '+error.message;err.style.display='block'}
+}
 
-  async function logout() {
-    await supabaseClient.auth.signOut();
-    document.getElementById('dashboard').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
+/* الطلبات */
+async function loadOrders(){
+  const box=$('orders');box.innerHTML='<div class="empty">جاري التحميل...</div>';
+  let q=db.from('orders').select('*').order('created_at',{ascending:false}).limit(100);
+  if(S.filter!=='all')q=q.eq('status',S.filter);
+  const{data,error}=await q;
+  if(error){box.innerHTML='<div class="empty">تعذر تحميل الطلبات: '+esc(error.message)+'</div>';return}
+  if(!data.length){box.innerHTML='<div class="empty">لا توجد طلبات.</div>'}
+  else{
+    const T={pending:'قيد الانتظار',approved:'مقبول',rejected:'مرفوض'};
+    box.innerHTML=data.map(o=>{const st=T[o.status]?o.status:'pending',wa=String(o.whatsapp||'').replace(/\D/g,''),r=safeUrl(o.receipt_url);
+      return `<div class="box"><div class="head"><h3>${esc(o.product_name)}</h3><span class="st ${st}">${T[st]}</span></div>
+      <div class="det">
+        <p><strong>الزبون:</strong> ${esc(o.user_email)}</p>
+        <p><strong>الدفع:</strong> ${esc(o.payment_method)} | <strong>المبلغ:</strong> ${esc(o.amount_paid)}</p>
+        ${o.whatsapp?`<p><strong>واتساب:</strong> <a href="https://wa.me/${wa}" target="_blank" rel="noopener">${esc(o.whatsapp)}</a></p>`:''}
+        ${o.game_id?`<p style="color:var(--gold);font-weight:700">الآيدي: ${esc(o.game_id)} <button class="sm gd" data-copy="${esc(o.game_id)}">نسخ</button></p>`:''}
+        ${o.rejection_reason?`<p style="color:var(--red)">سبب الرفض: ${esc(o.rejection_reason)}</p>`:''}
+        <p>${o.created_at?new Date(o.created_at).toLocaleString('ar-DZ'):''}</p>
+      </div>
+      ${r?`<img class="rimg" src="${esc(r)}" alt="وصل" loading="lazy" data-open="${esc(r)}">`:''}
+      ${o.status==='pending'?`<input class="reason" id="rs-${esc(o.id)}" placeholder="سبب الرفض...">
+      <div class="acts"><button class="sm ok" data-act="approve" data-id="${esc(o.id)}">قبول</button><button class="sm no" data-act="reject" data-id="${esc(o.id)}">رفض</button></div>`:''}</div>`}).join('');
   }
+  const{count}=await db.from('orders').select('id',{count:'exact',head:true}).eq('status','pending');
+  const c=$('pendCount');c.textContent=count||0;c.style.display=count?'inline':'none';
+}
+async function setStatus(id,status,reason){
+  if(!confirm(status==='approved'?'قبول هذا الطلب؟':'رفض هذا الطلب؟'))return;
+  const upd={status};if(reason)upd.rejection_reason=reason;
+  const{error}=await db.from('orders').update(upd).eq('id',id);
+  if(error)return toast('فشل التحديث: '+error.message,'bad');
+  toast(status==='approved'?'تم قبول الطلب':'تم رفض الطلب','ok');loadOrders();
+}
+function rejectFlow(id){
+  const inp=$('rs-'+id);
+  if(inp.style.display!=='block'){inp.style.display='block';inp.focus();return}
+  if(!inp.value.trim())return toast('اكتب سبب الرفض','bad');
+  setStatus(id,'rejected',inp.value.trim());
+}
 
-  function showTab(tabId) {
-    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById('tab-' + tabId).classList.add('active');
-    event.target.classList.add('active');
-  }
+/* المنتجات */
+async function loadProducts(){
+  const box=$('products');
+  const{data,error}=await db.from('products').select('*').order('created_at',{ascending:false});
+  if(error){box.innerHTML='<div class="empty">تعذر تحميل المنتجات.</div>';return}
+  S.products=new Map(data.map(p=>[String(p.id),p]));
+  box.innerHTML=data.length?data.map(p=>`<div class="item"><div><h4>${esc(p.name)}${p.is_sold?'<span class="tag">مباع</span>':''}${p.is_hidden?'<span class="tag h">مخفي</span>':''}</h4>
+    <small>${money(p.price)} DA${p.discount_price>0?' ← '+money(p.discount_price)+' DA':''} | ${esc(CATS[p.category]||p.category)}</small></div>
+    <div class="acts"><button class="sm gd" data-act="edit" data-id="${esc(p.id)}">تعديل</button>
+    <button class="sm gr" data-act="sold" data-id="${esc(p.id)}">${p.is_sold?'متاح':'مباع'}</button>
+    <button class="sm gr" data-act="hide" data-id="${esc(p.id)}">${p.is_hidden?'إظهار':'إخفاء'}</button>
+    <button class="sm no" data-act="del" data-id="${esc(p.id)}">حذف</button></div></div>`).join(''):'<div class="empty">لا توجد منتجات.</div>';
+}
+function resetForm(){
+  S.editId=null;['pName','pDesc','pPrice','pDisc','pImg','pImgs'].forEach(i=>$(i).value='');
+  $('pCat').value='games';$('formTitle').textContent='إضافة منتج';$('cancelEdit').style.display='none';
+}
+function editProduct(p){
+  S.editId=p.id;
+  $('pName').value=p.name||'';$('pDesc').value=p.description||'';$('pPrice').value=p.price??'';$('pDisc').value=p.discount_price||'';
+  $('pCat').value=p.category;$('pImg').value=p.image_url||'';$('pImgs').value=Array.isArray(p.images)?p.images.join('\n'):'';
+  $('formTitle').textContent='تعديل: '+p.name;$('cancelEdit').style.display='inline-block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function saveProduct(){
+  const name=$('pName').value.trim(),price=Number($('pPrice').value),disc=Number($('pDisc').value)||0;
+  if(!name||!(price>0))return toast('أدخل الاسم وسعراً صحيحاً','bad');
+  if(disc&&disc>=price)return toast('سعر التخفيض يجب أن يكون أقل من السعر','bad');
+  const img=$('pImg').value.trim();
+  if(img&&!safeUrl(img))return toast('رابط الصورة يجب أن يبدأ بـ https://','bad');
+  const imgs=$('pImgs').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(imgs.some(u=>!safeUrl(u)))return toast('الصور الإضافية يجب أن تبدأ بـ https://','bad');
+  const row={name,description:$('pDesc').value.trim(),price,discount_price:disc||null,category:$('pCat').value,image_url:img||null,images:imgs};
+  const btn=$('saveProduct');btn.disabled=true;
+  const{error}=S.editId?await db.from('products').update(row).eq('id',S.editId):await db.from('products').insert(row);
+  btn.disabled=false;
+  if(error)return toast('فشل الحفظ: '+error.message,'bad');
+  toast(S.editId?'تم تعديل المنتج':'تمت إضافة المنتج','ok');resetForm();loadProducts();
+}
+async function patchProduct(id,upd,msg){
+  const{error}=await db.from('products').update(upd).eq('id',id);
+  if(error)return toast('فشل التحديث: '+error.message,'bad');
+  toast(msg,'ok');loadProducts();
+}
+async function delProduct(id){
+  if(!confirm('حذف المنتج نهائياً؟'))return;
+  const{error}=await db.from('products').delete().eq('id',id);
+  if(error)return toast('فشل الحذف: '+error.message,'bad');
+  toast('تم الحذف','ok');loadProducts();
+}
 
-  async function loadOrders() {
-    const { data: orders } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
-    const list = document.getElementById('orders-list');
-    list.innerHTML = '';
-    if (!orders || orders.length === 0) { list.innerHTML = '<p style="text-align:center; color:var(--muted);">لا توجد طلبات.</p>'; return; }
-    orders.forEach(order => {
-      let statusClass = order.status === 'pending' ? 'pending' : (order.status === 'approved' ? 'approved' : 'rejected');
-      let statusText = order.status === 'pending' ? 'قيد الانتظار' : (order.status === 'approved' ? 'مقبول' : 'مرفوض');
-      const card = document.createElement('div');
-      card.className = 'order-card';
-      card.innerHTML = `
-        <div class="order-header"><h3>${order.product_name}</h3><span class="status ${statusClass}">${statusText}</span></div>
-        <div class="order-details">
-          <p><strong>الزبون:</strong> ${order.user_email}</p>
-          <p><strong>طريقة الدفع:</strong> ${order.payment_method}</p>
-          <p><strong>المبلغ:</strong> ${order.amount_paid}</p>
-          ${order.game_id ? `<p style="color:var(--gold); font-weight:bold;">الآيدي: ${order.game_id}</p>` : ''}
-        </div>
-        ${order.receipt_url ? `<img src="${order.receipt_url}" class="receipt-img" onclick="window.open(this.src)">` : ''}
-        ${order.status === 'pending' ? `<input type="text" id="reject-reason-${order.id}" class="reject-input" placeholder="سبب الرفض..."><div class="order-actions"><button class="btn-approve" onclick="updateOrderStatus(${order.id}, 'approved')">قبول</button><button class="btn-reject" onclick="promptReject(${order.id})">رفض</button></div>` : ''}
-      `;
-      list.appendChild(card);
-    });
-  }
+/* الإعدادات */
+const SMAP={sFlexy:'flexy_number',sCcp:'ccp_number',sKey:'ccp_key',sRib:'ccp_rib',sName:'ccp_name',sBid:'binance_id',sBmail:'binance_email'};
+async function loadSettings(){
+  const{data,error}=await db.from('settings').select('*').eq('id',1).single();
+  if(error)return toast('تعذر تحميل الإعدادات','bad');
+  for(const[i,k]of Object.entries(SMAP))$(i).value=data[k]||'';
+}
+async function saveSettings(){
+  const upd={};for(const[i,k]of Object.entries(SMAP))upd[k]=$(i).value.trim();
+  const btn=$('saveSettings');btn.disabled=true;
+  const{error}=await db.from('settings').update(upd).eq('id',1);
+  btn.disabled=false;
+  toast(error?'فشل الحفظ: '+error.message:'تم حفظ الإعدادات',error?'bad':'ok');
+}
 
-  function promptReject(orderId) {
-    const reasonInput = document.getElementById(`reject-reason-${orderId}`);
-    if (reasonInput.style.display === 'none' || reasonInput.style.display === '') { reasonInput.style.display = 'block'; reasonInput.focus(); } 
-    else { const reason = reasonInput.value; if (!reason) { alert('اكتب سبب الرفض'); return; } updateOrderStatus(orderId, 'rejected', reason); }
+/* الأحداث */
+document.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-tab],[data-f],[data-act],[data-copy],[data-open]');if(!el)return;
+  const d=el.dataset;
+  if(d.tab){document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('active',s.id==='tab-'+d.tab));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===el));return}
+  if(d.f){S.filter=d.f;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c===el));loadOrders();return}
+  if(d.copy){try{await navigator.clipboard.writeText(d.copy);toast('تم النسخ','ok')}catch{toast('تعذر النسخ','bad')}return}
+  if(d.open){window.open(d.open,'_blank','noopener');return}
+  const p=S.products.get(d.id);
+  switch(d.act){
+    case'approve':setStatus(d.id,'approved');break;
+    case'reject':rejectFlow(d.id);break;
+    case'edit':if(p)editProduct(p);break;
+    case'sold':if(p)patchProduct(d.id,{is_sold:!p.is_sold},p.is_sold?'أصبح المنتج متاحاً':'تم تعليم المنتج كمباع');break;
+    case'hide':if(p)patchProduct(d.id,{is_hidden:!p.is_hidden},p.is_hidden?'تم إظهار المنتج':'تم إخفاء المنتج');break;
+    case'del':delProduct(d.id);break;
   }
-
-  async function updateOrderStatus(orderId, newStatus, reason = '') {
-    if (!confirm('هل أنت متأكد؟')) return;
-    const updateData = { status: newStatus };
-    if (newStatus === 'rejected' && reason) updateData.rejection_reason = reason;
-    await supabaseClient.from('orders').update(updateData).eq('id', orderId);
-    loadOrders();
-  }
-
-  async function loadProductsForAdmin() {
-    const { data: products } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
-    const list = document.getElementById('products-list');
-    list.innerHTML = '';
-    if (!products) return;
-    products.forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'product-item';
-      div.innerHTML = `<div><h4>${p.name}</h4><span style="color:var(--muted); font-size:0.8rem;">${p.price} DA | ${p.category}</span></div><div class="actions"><button class="btn-delete" onclick="deleteProduct(${p.id})">حذف</button></div>`;
-      list.appendChild(div);
-    });
-  }
-
-  async function addProduct() {
-    const name = document.getElementById('pName').value;
-    const desc = document.getElementById('pDesc').value;
-    const price = document.getElementById('pPrice').value;
-    const category = document.getElementById('pCategory').value;
-    const image = document.getElementById('pImage').value;
-    if (!name || !price) { alert('أدخل الاسم والسعر'); return; }
-    const { error } = await supabaseClient.from('products').insert({ name, description: desc, price, category, image_url: image });
-    if (error) { alert('خطأ: ' + error.message); return; }
-    alert('تم إضافة المنتج بنجاح!');
-    document.getElementById('pName').value = ''; document.getElementById('pDesc').value = ''; document.getElementById('pPrice').value = ''; document.getElementById('pImage').value = '';
-    loadProductsForAdmin();
-  }
-
-  async function deleteProduct(id) {
-    if (!confirm('هل أنت متأكد من حذف المنتج؟')) return;
-    await supabaseClient.from('products').delete().eq('id', id);
-    loadProductsForAdmin();
-  }
-
-  async function loadSettingsForForm() {
-    const { data, error } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
-    if (error) return;
-    document.getElementById('setFlexy').value = data.flexy_number || '';
-    document.getElementById('setCcpNum').value = data.ccp_number || '';
-    document.getElementById('setKey').value = data.ccp_key || '';
-    document.getElementById('setRib').value = data.ccp_rib || '';
-    document.getElementById('setName').value = data.ccp_name || '';
-    document.getElementById('setBinanceId').value = data.binance_id || '';
-    document.getElementById('setBinanceEmail').value = data.binance_email || '';
-  }
-
-  async function saveSettings() {
-    const flexy = document.getElementById('setFlexy').value;
-    const ccpNum = document.getElementById('setCcpNum').value;
-    const key = document.getElementById('setKey').value;
-    const rib = document.getElementById('setRib').value;
-    const name = document.getElementById('setName').value;
-    const binanceId = document.getElementById('setBinanceId').value;
-    const binanceEmail = document.getElementById('setBinanceEmail').value;
-    const { error } = await supabaseClient.from('settings').update({
-      flexy_number: flexy, ccp_number: ccpNum, ccp_key: key, ccp_rib: rib, ccp_name: name, binance_id: binanceId, binance_email: binanceEmail
-    }).eq('id', 1);
-    if (error) { alert('خطأ: ' + error.message); return; }
-    alert('تم حفظ الإعدادات بنجاح!');
-  }
+});
+$('loginBtn').onclick=login;
+['aemail','apass'].forEach(i=>$(i).addEventListener('keydown',e=>{if(e.key==='Enter')login()}));
+$('logout').onclick=()=>db.auth.signOut();
+$('saveProduct').onclick=saveProduct;
+$('cancelEdit').onclick=resetForm;
+$('saveSettings').onclick=saveSettings;
+db.auth.onAuthStateChange((_e,s)=>{setTimeout(()=>enter(s?s.user:null),0)});
 </script>
 </body>
 </html>
