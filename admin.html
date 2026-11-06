@@ -70,6 +70,16 @@
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY294Zm1kbWNqb2Zzd21na2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MjMzMTYsImV4cCI6MjEwOTQ5OTMxNn0.H2At_v8QhrO89001o-y0nV0sXf3Ve6nSgUcqI3RtEq8';
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+  // التحقق من الجلسة عند فتح الصفحة
+  window.onload = async function() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && session.user.email === 'chefgdx@gmail.com') {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadOrders();
+    }
+  };
+
   async function adminLogin() {
     const email = document.getElementById('adminEmail').value;
     const password = document.getElementById('adminPassword').value;
@@ -79,7 +89,6 @@
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) { errorDiv.innerText = 'خطأ: ' + error.message; errorDiv.style.display = 'block'; return; }
 
-    // تأكد من تغيير البريد إلى بريدك الحقيقي
     if (data.user.email === 'chefgdx@gmail.com') { 
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
@@ -164,7 +173,7 @@
     if (error) { alert('خطأ: ' + error.message); return; }
     
     alert('تم تحديث حالة الطلب!');
-    loadOrders();
+    loadOrders(); // تحديث القائمة فقط، بدون إعادة تحميل الصفحة
   }
 </script>
 </body>
