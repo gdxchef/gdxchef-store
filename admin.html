@@ -59,6 +59,11 @@ label{display:block;margin-bottom:3px;font-size:.88rem}
 #toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;gap:8px;width:92%;max-width:380px}
 .toast{background:#1d1d1d;border:1px solid var(--gold);border-radius:10px;padding:10px 14px;font-weight:700;font-size:.9rem}
 .toast.ok{border-color:var(--green)}.toast.bad{border-color:var(--red)}
+.trow{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+#tpl{background:#0d0d0d;border:1px dashed var(--gold);border-radius:10px;padding:12px;margin-bottom:10px;display:none}
+.discbox{background:#0d0d0d;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.discbox .chips{margin:0 0 8px}
+.athumb{height:64px;max-width:55%;border-radius:6px;object-fit:cover;border:1px solid #333}
 </style>
 </head>
 <body>
@@ -75,6 +80,7 @@ label{display:block;margin-bottom:3px;font-size:.88rem}
   <div class="tabs" id="tabs">
     <button class="tab active" data-tab="orders">الطلبات <i id="pendCount" style="display:none"></i></button>
     <button class="tab" data-tab="products">المنتجات</button>
+    <button class="tab" data-tab="ads">الإعلانات</button>
     <button class="tab" data-tab="settings">إعدادات الدفع</button>
   </div>
 
@@ -84,6 +90,7 @@ label{display:block;margin-bottom:3px;font-size:.88rem}
       <button class="chip" data-f="approved">مقبولة</button>
       <button class="chip" data-f="rejected">مرفوضة</button>
       <button class="chip" data-f="all">الكل</button>
+      <button class="chip" data-act="odelall" style="border-color:var(--red);color:var(--red)">🗑 حذف المقبولة والمرفوضة</button>
     </div>
     <div id="orders"></div>
   </div>
@@ -92,17 +99,36 @@ label{display:block;margin-bottom:3px;font-size:.88rem}
     <div class="box">
       <h3 id="formTitle">إضافة منتج</h3>
       <label>الاسم</label><input id="pName">
-      <label>الوصف</label><textarea id="pDesc" rows="2"></textarea>
-      <label>السعر (DA)</label><input type="number" id="pPrice" inputmode="decimal" min="0">
-      <label>سعر التخفيض (اختياري)</label><input type="number" id="pDisc" inputmode="decimal" min="0">
       <label>التصنيف</label>
       <select id="pCat"><option value="games">شحن ألعاب</option><option value="apps">شحن تطبيقات</option><option value="accounts_ff">حساب Free Fire</option><option value="accounts_efootball">حساب eFOOTBALL</option></select>
+      <div id="descBox"><label>الوصف</label><textarea id="pDesc" rows="2"></textarea></div>
+      <div id="tpl"></div>
+      <label>السعر (DA)</label><input type="number" id="pPrice" inputmode="decimal" min="0">
+      <label>التخفيض (اختياري)</label>
+      <div class="discbox">
+        <input type="number" id="pDisc" inputmode="decimal" min="0" placeholder="السعر بعد التخفيض">
+        <div class="chips"><button class="chip" data-pct="10">-10%</button><button class="chip" data-pct="20">-20%</button><button class="chip" data-pct="30">-30%</button><button class="chip" data-pct="50">-50%</button><button class="chip" data-pct="0">إلغاء التخفيض</button></div>
+        <div id="discPrev" class="det">لا يوجد تخفيض</div>
+      </div>
+      
+      
       <label>الصورة الرئيسية (رابط https)</label><input id="pImg" placeholder="https://...">
       <label>صور إضافية (رابط في كل سطر)</label><textarea id="pImgs" rows="3" placeholder="https://..."></textarea>
       <div class="acts"><button class="btn" id="saveProduct">حفظ المنتج</button><button class="sm gr" id="cancelEdit" style="display:none">إلغاء التعديل</button></div>
     </div>
     <h2 class="h">المنتجات الحالية</h2>
     <div id="products"></div>
+  </div>
+
+  <div id="tab-ads" class="sec">
+    <div class="box">
+      <h3>إضافة إعلان</h3>
+      <label>رابط صورة الإعلان (https)</label><input id="adUrl" placeholder="https://...">
+      <button class="btn" id="addAd">إضافة الإعلان</button>
+      <p class="det" style="margin-top:8px">يتبدّل الإعلان كل 3 ثوانٍ في صفحة الزبون. الأفضل صورة عريضة بنسبة 16:6.</p>
+    </div>
+    <h2 class="h">الإعلانات الحالية</h2>
+    <div id="adsList"></div>
   </div>
 
   <div id="tab-settings" class="sec">
@@ -126,7 +152,11 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safeUrl=u=>/^https:\/\//i.test(u||'')?u:'';
 const money=n=>Number(n||0).toLocaleString('en-US');
-const S={filter:'pending',products:new Map(),editId:null,loaded:false};
+const S={filter:'pending',products:new Map(),editId:null,loaded:false,orders:[],ads:[]};
+const TPL={
+  accounts_ff:[[['رقم الحساب','num']],[['مستوى الحساب','lvl'],['برايم الحساب','prime']],[['عدد التيشرتات','sh'],['عدد البناطيل','pa']],[['عدد أسلحة ايفو','evo'],['عدد الماكس','max']],[['عدد الرقصات','dn']],[['باقي المواصفات','rest']]],
+  accounts_efootball:[[['رقم الحساب','num']],[['ريت الحساب','rate']],[['عدد اللاعبين المدفوعين','paid']],[['باقي المواصفات','rest']]]
+};
 const CATS={games:'شحن ألعاب',apps:'شحن تطبيقات',accounts_ff:'حساب Free Fire',accounts_efootball:'حساب eFOOTBALL'};
 
 function toast(m,t=''){const e=document.createElement('div');e.className='toast '+t;e.textContent=m;$('toasts').appendChild(e);setTimeout(()=>e.remove(),3500)}
@@ -136,7 +166,7 @@ function showApp(on){$('login').style.display=on?'none':'flex';$('app').style.di
 async function enter(user){
   if(user&&user.email===ADMIN_EMAIL){
     showApp(true);
-    if(!S.loaded){S.loaded=true;loadOrders();loadProducts();loadSettings()}
+    if(!S.loaded){S.loaded=true;loadOrders();loadProducts();loadAds();loadSettings()}
   }else{
     showApp(false);S.loaded=false;
     if(user){toast('هذا الحساب ليس لديه صلاحيات المدير','bad');await db.auth.signOut()}
@@ -159,6 +189,7 @@ async function loadOrders(){
   if(S.filter!=='all')q=q.eq('status',S.filter);
   const{data,error}=await q;
   if(error){box.innerHTML='<div class="empty">تعذر تحميل الطلبات: '+esc(error.message)+'</div>';return}
+  S.orders=data;
   if(!data.length){box.innerHTML='<div class="empty">لا توجد طلبات.</div>'}
   else{
     const T={pending:'قيد الانتظار',approved:'مقبول',rejected:'مرفوض'};
@@ -174,7 +205,8 @@ async function loadOrders(){
       </div>
       ${r?`<img class="rimg" src="${esc(r)}" alt="وصل" loading="lazy" data-open="${esc(r)}">`:''}
       ${o.status==='pending'?`<input class="reason" id="rs-${esc(o.id)}" placeholder="سبب الرفض...">
-      <div class="acts"><button class="sm ok" data-act="approve" data-id="${esc(o.id)}">قبول</button><button class="sm no" data-act="reject" data-id="${esc(o.id)}">رفض</button></div>`:''}</div>`}).join('');
+      `:''}
+      <div class="acts">${o.status==='pending'?`<button class="sm ok" data-act="approve" data-id="${esc(o.id)}">قبول</button><button class="sm no" data-act="reject" data-id="${esc(o.id)}">رفض</button>`:''}<button class="sm gr" data-act="odel" data-id="${esc(o.id)}">🗑 حذف</button></div></div>`}).join('');
   }
   const{count}=await db.from('orders').select('id',{count:'exact',head:true}).eq('status','pending');
   const c=$('pendCount');c.textContent=count||0;c.style.display=count?'inline':'none';
@@ -193,6 +225,84 @@ function rejectFlow(id){
   setStatus(id,'rejected',inp.value.trim());
 }
 
+/* حذف الطلبات */
+async function rmReceipts(list){
+  const paths=list.map(o=>{const m=String(o.receipt_url||'').match(/\/receipts\/([^?]+)/);return m?decodeURIComponent(m[1]):null}).filter(Boolean);
+  if(paths.length)await db.storage.from('receipts').remove(paths);
+}
+async function delOrder(id){
+  const o=S.orders.find(x=>String(x.id)===String(id));if(!o)return;
+  if(!confirm('حذف هذا الطلب نهائياً مع صورة الوصل؟'))return;
+  const{error}=await db.from('orders').delete().eq('id',id);
+  if(error)return toast('فشل الحذف: '+error.message,'bad');
+  await rmReceipts([o]).catch(()=>{});
+  toast('تم حذف الطلب','ok');loadOrders();
+}
+async function delOrders(){
+  const list=S.orders.filter(o=>o.status!=='pending');
+  if(!list.length)return toast('لا توجد طلبات مقبولة أو مرفوضة في القائمة المعروضة','bad');
+  if(!confirm('حذف '+list.length+' طلب (المقبولة والمرفوضة المعروضة فقط)؟ لا يمكن التراجع.'))return;
+  const{error}=await db.from('orders').delete().in('id',list.map(o=>o.id));
+  if(error)return toast('فشل الحذف: '+error.message,'bad');
+  await rmReceipts(list).catch(()=>{});
+  toast('تم حذف '+list.length+' طلب','ok');loadOrders();
+}
+
+/* الإعلانات */
+async function loadAds(){
+  const box=$('adsList');
+  const{data,error}=await db.from('ads').select('*').order('id',{ascending:false});
+  if(error){box.innerHTML='<div class="empty">تعذر تحميل الإعلانات: '+esc(error.message)+'</div>';return}
+  S.ads=data;
+  box.innerHTML=data.length?data.map(a=>`<div class="item"><img class="athumb" src="${esc(safeUrl(a.image_url))}" alt="">${a.is_active?'':'<span class="tag h">موقوف</span>'}
+    <div class="acts"><button class="sm gr" data-act="atog" data-id="${esc(a.id)}">${a.is_active?'إيقاف':'تفعيل'}</button><button class="sm no" data-act="adel" data-id="${esc(a.id)}">حذف</button></div></div>`).join(''):'<div class="empty">لا توجد إعلانات.</div>';
+}
+async function addAd(){
+  const u=$('adUrl').value.trim();
+  if(!safeUrl(u))return toast('الرابط يجب أن يبدأ بـ https://','bad');
+  const{error}=await db.from('ads').insert({image_url:u,is_active:true});
+  if(error)return toast('فشل الإضافة: '+error.message,'bad');
+  $('adUrl').value='';toast('تمت إضافة الإعلان','ok');loadAds();
+}
+async function toggleAd(id){
+  const a=S.ads.find(x=>String(x.id)===String(id));if(!a)return;
+  const{error}=await db.from('ads').update({is_active:!a.is_active}).eq('id',id);
+  if(error)return toast('فشل التحديث: '+error.message,'bad');
+  loadAds();
+}
+async function delAd(id){
+  if(!confirm('حذف هذا الإعلان؟'))return;
+  const{error}=await db.from('ads').delete().eq('id',id);
+  if(error)return toast('فشل الحذف: '+error.message,'bad');
+  toast('تم حذف الإعلان','ok');loadAds();
+}
+
+/* قوالب الحسابات والتخفيض */
+function renderTpl(){
+  const t=TPL[$('pCat').value],box=$('tpl');
+  $('descBox').style.display=t?'none':'block';
+  box.style.display=t?'block':'none';
+  box.innerHTML=t?t.map(r=>`<div class="trow">${r.map(([l,k])=>`<div><label>${l}</label><input data-tk="${k}" data-tl="${l}" autocomplete="off"></div>`).join('')}</div>`).join(''):'';
+}
+function buildDesc(){
+  const t=TPL[$('pCat').value];if(!t)return $('pDesc').value.trim();
+  return t.map(r=>r.map(([l,k])=>{const v=document.querySelector('#tpl [data-tk="'+k+'"]').value.trim();return v?l+' : '+v:''}).filter(Boolean).join(' / ')).filter(Boolean).join('\n');
+}
+function fillTpl(desc){
+  if(!TPL[$('pCat').value])return;
+  String(desc||'').split('\n').flatMap(l=>l.split(' / ')).forEach(s=>{
+    const i=s.indexOf(':');if(i<0)return;
+    const lab=s.slice(0,i).trim(),inp=[...document.querySelectorAll('#tpl [data-tl]')].find(e=>e.dataset.tl===lab);
+    if(inp)inp.value=s.slice(i+1).trim();
+  });
+}
+function updDisc(){
+  const p=Number($('pPrice').value),d=Number($('pDisc').value),n=$('discPrev');
+  if(d>0&&p>0&&d<p)n.textContent='الزبون سيرى: '+money(p)+' ← '+money(d)+' DA (خصم '+Math.round((1-d/p)*100)+'%)';
+  else if(d>0)n.textContent='سعر التخفيض يجب أن يكون أقل من السعر الأصلي';
+  else n.textContent='لا يوجد تخفيض';
+}
+
 /* المنتجات */
 async function loadProducts(){
   const box=$('products');
@@ -208,12 +318,12 @@ async function loadProducts(){
 }
 function resetForm(){
   S.editId=null;['pName','pDesc','pPrice','pDisc','pImg','pImgs'].forEach(i=>$(i).value='');
-  $('pCat').value='games';$('formTitle').textContent='إضافة منتج';$('cancelEdit').style.display='none';
+  $('pCat').value='games';renderTpl();updDisc();$('formTitle').textContent='إضافة منتج';$('cancelEdit').style.display='none';
 }
 function editProduct(p){
   S.editId=p.id;
   $('pName').value=p.name||'';$('pDesc').value=p.description||'';$('pPrice').value=p.price??'';$('pDisc').value=p.discount_price||'';
-  $('pCat').value=p.category;$('pImg').value=p.image_url||'';$('pImgs').value=Array.isArray(p.images)?p.images.join('\n'):'';
+  $('pCat').value=p.category;renderTpl();fillTpl(p.description);updDisc();$('pImg').value=p.image_url||'';$('pImgs').value=Array.isArray(p.images)?p.images.join('\n'):'';
   $('formTitle').textContent='تعديل: '+p.name;$('cancelEdit').style.display='inline-block';
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -225,7 +335,7 @@ async function saveProduct(){
   if(img&&!safeUrl(img))return toast('رابط الصورة يجب أن يبدأ بـ https://','bad');
   const imgs=$('pImgs').value.split('\n').map(s=>s.trim()).filter(Boolean);
   if(imgs.some(u=>!safeUrl(u)))return toast('الصور الإضافية يجب أن تبدأ بـ https://','bad');
-  const row={name,description:$('pDesc').value.trim(),price,discount_price:disc||null,category:$('pCat').value,image_url:img||null,images:imgs};
+  const row={name,description:buildDesc(),price,discount_price:disc||null,category:$('pCat').value,image_url:img||null,images:imgs};
   const btn=$('saveProduct');btn.disabled=true;
   const{error}=S.editId?await db.from('products').update(row).eq('id',S.editId):await db.from('products').insert(row);
   btn.disabled=false;
@@ -261,12 +371,13 @@ async function saveSettings(){
 
 /* الأحداث */
 document.addEventListener('click',async e=>{
-  const el=e.target.closest('[data-tab],[data-f],[data-act],[data-copy],[data-open]');if(!el)return;
+  const el=e.target.closest('[data-tab],[data-f],[data-act],[data-copy],[data-open],[data-pct]');if(!el)return;
   const d=el.dataset;
   if(d.tab){document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('active',s.id==='tab-'+d.tab));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===el));return}
   if(d.f){S.filter=d.f;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c===el));loadOrders();return}
   if(d.copy){try{await navigator.clipboard.writeText(d.copy);toast('تم النسخ','ok')}catch{toast('تعذر النسخ','bad')}return}
   if(d.open){window.open(d.open,'_blank','noopener');return}
+  if(d.pct!==undefined){const pr=Number($('pPrice').value);if(!(pr>0))return toast('أدخل السعر أولاً','bad');$('pDisc').value=+d.pct?Math.round(pr*(1-d.pct/100)):'';updDisc();return}
   const p=S.products.get(d.id);
   switch(d.act){
     case'approve':setStatus(d.id,'approved');break;
@@ -275,6 +386,10 @@ document.addEventListener('click',async e=>{
     case'sold':if(p)patchProduct(d.id,{is_sold:!p.is_sold},p.is_sold?'أصبح المنتج متاحاً':'تم تعليم المنتج كمباع');break;
     case'hide':if(p)patchProduct(d.id,{is_hidden:!p.is_hidden},p.is_hidden?'تم إظهار المنتج':'تم إخفاء المنتج');break;
     case'del':delProduct(d.id);break;
+    case'odel':delOrder(d.id);break;
+    case'odelall':delOrders();break;
+    case'atog':toggleAd(d.id);break;
+    case'adel':delAd(d.id);break;
   }
 });
 $('loginBtn').onclick=login;
@@ -283,6 +398,10 @@ $('logout').onclick=()=>db.auth.signOut();
 $('saveProduct').onclick=saveProduct;
 $('cancelEdit').onclick=resetForm;
 $('saveSettings').onclick=saveSettings;
+$('addAd').onclick=addAd;
+$('pCat').onchange=renderTpl;
+['pPrice','pDisc'].forEach(i=>$(i).addEventListener('input',updDisc));
+renderTpl();
 db.auth.onAuthStateChange((_e,s)=>{setTimeout(()=>enter(s?s.user:null),0)});
 </script>
 </body>
