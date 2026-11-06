@@ -3,30 +3,196 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GDX CHEF STORE</title>
+<title>GDX CHEF STORE | متجر شحن الألعاب</title>
 <style>
-  :root { --gold:#C9A24B; --gold-soft:#E8D39A; --text:#EFE6D0; --muted:#9A9078; }
-  * { box-sizing: border-box; margin: 0; }
-  html, body { height: 100%; }
-  body { background:#000; color:var(--text); font-family: Tahoma, system-ui, sans-serif;
-         display:grid; place-items:center; text-align:center; padding:24px; }
-  main { max-width:520px; }
-  .mark { width:84px; height:84px; margin:0 auto 28px; border:2px solid var(--gold);
-          border-radius:50%; display:grid; place-items:center; font-weight:900;
-          font-size:1.5rem; color:var(--gold); direction:ltr; }
-  h1 { font-size:clamp(2rem,8vw,3rem); font-weight:900; color:var(--gold);
-       direction:ltr; letter-spacing:.06em; }
-  p { margin-top:14px; font-size:1.1rem; color:var(--gold-soft); }
-  .ok { margin-top:32px; padding-top:20px; border-top:1px solid #2a2418;
-        font-size:.95rem; color:var(--muted); }
+  :root { --gold:#C9A24B; --gold-soft:#E8D39A; --bg:#0a0a0a; --card:#151515; --text:#EFE6D0; --muted:#9A9078; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, system-ui, sans-serif; }
+  body { background:var(--bg); color:var(--text); line-height: 1.6; }
+  
+  /* شريط التنقل */
+  header { background: rgba(0,0,0,0.95); border-bottom: 1px solid #2a2418; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; }
+  .logo { color: var(--gold); font-weight: 900; font-size: 1.2rem; letter-spacing: 0.05em; }
+  nav { display: flex; gap: 15px; flex-wrap: wrap; }
+  nav a { color: var(--text); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; cursor: pointer; }
+  nav a:hover, nav a.active { color: var(--gold); font-weight: bold; }
+  
+  /* الأزرار */
+  .btn { background: var(--gold); color: #000; border: none; cursor: pointer; padding: 10px 20px; border-radius: 6px; font-weight: bold; transition: background 0.3s; font-family: inherit; font-size: 1rem; text-decoration: none; display: inline-block; text-align: center; }
+  .btn:hover { background: var(--gold-soft); }
+  .btn-outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+  .btn-outline:hover { background: var(--gold); color: #000; }
+
+  /* الحاوية العامة */
+  .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+  .page-section { display: none; } /* إخفاء كل الصفحات افتراضياً */
+  .page-section.active { display: block; animation: fadeIn 0.5s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* قسم الإعلانات */
+  .ads-banner { background: linear-gradient(45deg, #1a150a, #2a2418); border: 1px solid var(--gold); border-radius: 10px; padding: 30px; text-align: center; margin-bottom: 30px; color: var(--gold-soft); }
+  .ads-banner h2 { color: var(--gold); margin-bottom: 10px; }
+
+  /* شبكة المنتجات */
+  .section-title { text-align: center; color: var(--gold); margin-bottom: 30px; font-size: 1.5rem; border-bottom: 1px solid #2a2418; padding-bottom: 10px; }
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+  .product-card { background: var(--card); border: 1px solid #2a2418; border-radius: 12px; padding: 20px; text-align: center; transition: transform 0.3s, border-color 0.3s; }
+  .product-card:hover { transform: translateY(-5px); border-color: var(--gold); }
+  .product-card h3 { color: var(--gold-soft); margin-bottom: 10px; }
+  .product-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 15px; height: 40px; }
+  .price { font-size: 1.5rem; color: var(--gold); font-weight: bold; margin-bottom: 15px; }
+
+  /* المحفظة والتواصل */
+  .wallet-box { background: var(--card); border: 1px solid #2a2418; border-radius: 12px; padding: 30px; text-align: center; max-width: 500px; margin: 0 auto; }
+  .wallet-box h3 { color: var(--gold); margin-bottom: 20px; }
+  .wallet-box .balance { font-size: 2.5rem; color: var(--gold-soft); font-weight: bold; margin-bottom: 20px; }
+  .contact-buttons { display: flex; flex-direction: column; gap: 15px; max-width: 400px; margin: 0 auto; }
+  
+  /* كيف تشتري */
+  .steps { display: flex; flex-direction: column; gap: 15px; }
+  .step-item { background: var(--card); border: 1px solid #2a2418; padding: 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px; }
+  .step-num { background: var(--gold); color: #000; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: bold; flex-shrink: 0; }
+
+  footer { text-align: center; padding: 20px; border-top: 1px solid #2a2418; color: var(--muted); font-size: 0.8rem; margin-top: 40px; }
 </style>
 </head>
 <body>
-<main>
-  <div class="mark" aria-hidden="true">GDX</div>
-  <h1>GDX CHEF STORE</h1>
-  <p>شحن الألعاب وحسابات الألعاب</p>
-  <div class="ok">صفحة اختبار النشر — المتجر قيد التجهيز</div>
-</main>
+
+<header>
+  <div class="logo">GDX CHEF</div>
+  <nav>
+    <a onclick="showPage('home')" class="active" id="nav-home">الرئيسية</a>
+    <a onclick="showPage('games')" id="nav-games">شحن الألعاب</a>
+    <a onclick="showPage('accounts')" id="nav-accounts">حسابات</a>
+    <a onclick="showPage('wallet')" id="nav-wallet">رصيدي</a>
+    <a onclick="showPage('how-to')" id="nav-how">كيف تشتري</a>
+    <a onclick="showPage('contact')" id="nav-contact">تواصل معنا</a>
+    <a href="#" style="color: var(--gold); font-weight: bold; border-right: 1px solid #333; padding-right: 15px;">تسجيل الدخول</a>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- الصفحة الرئيسية -->
+  <div id="page-home" class="page-section active">
+    <div class="ads-banner">
+      <h2>🎉 عروض مؤقتة! 🎉</h2>
+      <p>خصم 10% على شحن جميع الألعاب هذا الأسبوع فقط. استخدم كود: <strong>GDX10</strong></p>
+    </div>
+    <h2 class="section-title">أحدث المنتجات</h2>
+    <div class="products-grid" id="home-products"></div>
+  </div>
+
+  <!-- صفحة شحن الألعاب -->
+  <div id="page-games" class="page-section">
+    <h2 class="section-title">شحن الألعاب والتطبيقات</h2>
+    <div class="products-grid" id="games-products"></div>
+  </div>
+
+  <!-- صفحة الحسابات -->
+  <div id="page-accounts" class="page-section">
+    <h2 class="section-title">حسابات الألعاب والسوشيال ميديا</h2>
+    <div class="products-grid" id="accounts-products"></div>
+  </div>
+
+  <!-- صفحة المحفظة -->
+  <div id="page-wallet" class="page-section">
+    <h2 class="section-title">محفظتي</h2>
+    <div class="wallet-box">
+      <h3>رصيدك الحالي</h3>
+      <div class="balance">0.00 DA</div>
+      <p style="color: var(--muted); margin-bottom: 20px;">يجب تسجيل الدخول لشحن رصيدك</p>
+      <button class="btn">شحن الرصيد (CCP / Binance)</button>
+    </div>
+  </div>
+
+  <!-- صفحة كيفية الشراء -->
+  <div id="page-how-to" class="page-section">
+    <h2 class="section-title">كيف تشتري؟</h2>
+    <div class="steps">
+      <div class="step-item"><div class="step-num">1</div><div>أنشئ حساباً أو سجل الدخول.</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>اختر المنتج الذي تريده (شحن أو حساب).</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>اختر طريقة الدفع (Flexy, CCP, Binance).</div></div>
+      <div class="step-item"><div class="step-num">4</div><div>قم بالتحويل وارفع صورة الوصل.</div></div>
+      <div class="step-item"><div class="step-num">5</div><div>انتظر موافقة الإدارة، وسيصلك إشعار.</div></div>
+    </div>
+  </div>
+
+  <!-- صفحة تواصل معنا -->
+  <div id="page-contact" class="page-section">
+    <h2 class="section-title">تواصل معنا</h2>
+    <div class="contact-buttons">
+      <a href="https://wa.me/213562159983" target="_blank" class="btn" style="background: #25D366; color: #fff;">واتساب</a>
+      <a href="https://www.instagram.com/gdx.chef" target="_blank" class="btn" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff;">إنستغرام</a>
+      <a href="mailto:chefgdx@gmail.com" class="btn" style="background: #EA4335; color: #fff;">البريد الإلكتروني</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  &copy; 2024 GDX CHEF STORE. جميع الحقوق محفوظة.
+</footer>
+
+<!-- ربط Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://focoxfmdmcjofswmgkco.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_LvuYQ_QYiCRVufFETm9jBA_TfyaF0pv';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // دالة التنقل بين الصفحات
+  function showPage(pageId) {
+    // إخفاء كل الصفحات
+    document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+    // إزالة التفعيل من الروابط
+    document.querySelectorAll('nav a').forEach(el => el.classList.remove('active'));
+    
+    // إظهار الصفحة المطلوبة
+    document.getElementById('page-' + pageId).classList.add('active');
+    document.getElementById('nav-' + pageId).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  // تحميل المنتجات
+  async function loadProducts() {
+    const { data: products, error } = await supabase.from('products').select('*');
+    if (error) { console.error(error); return; }
+
+    const homeGrid = document.getElementById('home-products');
+    const gamesGrid = document.getElementById('games-products');
+    const accountsGrid = document.getElementById('accounts-products');
+    
+    homeGrid.innerHTML = ''; gamesGrid.innerHTML = ''; accountsGrid.innerHTML = '';
+
+    products.forEach(product => {
+      const card = createProductCard(product);
+      
+      // توزيع المنتجات حسب القسم
+      if (product.category === 'games' || product.category === 'apps') {
+        gamesGrid.appendChild(createProductCard(product));
+      } else if (product.category === 'accounts_ff' || product.category === 'accounts_efootball') {
+        accountsGrid.appendChild(createProductCard(product));
+      }
+      
+      // إضافة أول 3 منتجات للصفحة الرئيسية
+      if(homeGrid.children.length < 3) homeGrid.appendChild(createProductCard(product));
+    });
+  }
+
+  function createProductCard(product) {
+    const div = document.createElement('div');
+    div.className = 'product-card';
+    div.innerHTML = `
+      <h3>${product.name}</h3>
+      <p>${product.description}</p>
+      <div class="price">${product.price} DA</div>
+      <button class="btn" onclick="alert('قريباً: سيتم تفعيل نظام الشراء!')">شراء</button>
+    `;
+    return div;
+  }
+
+  document.addEventListener('DOMContentLoaded', loadProducts);
+</script>
+
 </body>
 </html>
