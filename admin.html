@@ -16,42 +16,30 @@
   .login-box input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
   .login-box button { width: 100%; padding: 10px; background: var(--gold); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-  #dashboard { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+  #dashboard { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; }
   header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
   header h1 { color: var(--gold); font-size: 1.5rem; }
   .logout-btn { background: #ff4d4d; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-  .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-  .tab-btn { background: #222; color: var(--text); border: 1px solid #333; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
+  .tab-btn { background: #222; color: var(--text); border: 1px solid #333; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap; }
   .tab-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
   .content-section { display: none; }
   .content-section.active { display: block; }
-
-  .order-card { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-  .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-  .order-header h3 { color: var(--gold); font-size: 1.1rem; }
-  .status { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
-  .status.pending { background: var(--yellow); color: #000; }
-  .status.approved { background: var(--green); color: #fff; }
-  .status.rejected { background: #ff4d4d; color: #fff; }
-
-  .order-details { font-size: 0.9rem; color: var(--muted); margin-bottom: 10px; }
-  .order-details strong { color: var(--text); }
-  .order-actions { display: flex; gap: 10px; margin-top: 10px; }
-  .order-actions button { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-  .btn-approve { background: var(--green); color: #fff; }
-  .btn-reject { background: #ff4d4d; color: #fff; }
-  .receipt-img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin-top: 10px; border: 1px solid #333; cursor: pointer; }
-  .reject-input { width: 100%; padding: 8px; margin-top: 10px; border-radius: 6px; border: 1px solid #ff4d4d; background: #000; color: #fff; display: none; }
-  .error-msg { color: #ff4d4d; font-size: 0.9rem; margin-bottom: 10px; display: none; }
 
   /* إعدادات الدفع */
   .settings-group { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
   .settings-group h3 { color: var(--gold); margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px; }
   .input-group { margin-bottom: 15px; }
   .input-group label { display: block; margin-bottom: 5px; color: var(--text); }
-  .input-group input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
-  .save-btn { background: var(--gold); color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+  .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
+  .save-btn { background: var(--gold); color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
+
+  /* المنتجات */
+  .product-item { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .product-item h4 { color: var(--gold); }
+  .product-item .actions { display: flex; gap: 10px; }
+  .btn-delete { background: #ff4d4d; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -75,35 +63,57 @@
 
   <div class="tabs">
     <button class="tab-btn active" onclick="showTab('orders')">الطلبات</button>
+    <button class="tab-btn" onclick="showTab('products')">إدارة المنتجات</button>
     <button class="tab-btn" onclick="showTab('settings')">إعدادات الدفع</button>
   </div>
 
   <div id="tab-orders" class="content-section active">
-    <h2 style="color:var(--gold); margin-bottom: 15px;">الطلبات الجديدة</h2>
+    <h2 style="color:var(--gold); margin-bottom: 15px;">الطلبات</h2>
     <div id="orders-list"></div>
+  </div>
+
+  <div id="tab-products" class="content-section">
+    <h2 style="color:var(--gold); margin-bottom: 15px;">إدارة المنتجات</h2>
+    
+    <div class="settings-group">
+      <h3>إضافة منتج جديد</h3>
+      <div class="input-group"><label>اسم المنتج</label><input type="text" id="pName"></div>
+      <div class="input-group"><label>الوصف</label><input type="text" id="pDesc"></div>
+      <div class="input-group"><label>السعر (DA)</label><input type="number" id="pPrice"></div>
+      <div class="input-group"><label>التصنيف</label>
+        <select id="pCategory">
+          <option value="games">شحن ألعاب</option>
+          <option value="apps">شحن تطبيقات</option>
+          <option value="accounts_ff">حساب Free Fire</option>
+          <option value="accounts_efootball">حساب eFOOTBALL</option>
+        </select>
+      </div>
+      <div class="input-group"><label>رابط الصورة (URL)</label><input type="text" id="pImage" placeholder="https://..."></div>
+      <button class="save-btn" onclick="addProduct()">إضافة المنتج</button>
+    </div>
+
+    <h3 style="color:var(--gold); margin-bottom: 10px;">المنتجات الحالية</h3>
+    <div id="products-list"></div>
   </div>
 
   <div id="tab-settings" class="content-section">
     <h2 style="color:var(--gold); margin-bottom: 15px;">إعدادات الدفع</h2>
-    
     <div class="settings-group">
-      <h3>Flexy (فليكسي)</h3>
+      <h3>Flexy</h3>
       <div class="input-group"><label>رقم الفليكسي</label><input type="text" id="setFlexy"></div>
     </div>
-
     <div class="settings-group">
       <h3>CCP / BaridiMob</h3>
-      <div class="input-group"><label>RIB (رقم الحساب)</label><input type="text" id="setRib"></div>
+      <div class="input-group"><label>رقم CCP (الحساب)</label><input type="text" id="setCcpNum"></div>
       <div class="input-group"><label>المفتاح (Clé)</label><input type="text" id="setKey"></div>
+      <div class="input-group"><label>RIB</label><input type="text" id="setRib"></div>
       <div class="input-group"><label>الاسم الكامل</label><input type="text" id="setName"></div>
     </div>
-
     <div class="settings-group">
       <h3>Binance</h3>
       <div class="input-group"><label>ID الحساب</label><input type="text" id="setBinanceId"></div>
       <div class="input-group"><label>البريد الإلكتروني</label><input type="text" id="setBinanceEmail"></div>
     </div>
-
     <button class="save-btn" onclick="saveSettings()">حفظ التغييرات</button>
   </div>
 </div>
@@ -120,6 +130,7 @@
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
       loadOrders();
+      loadProductsForAdmin();
       loadSettingsForForm();
     }
   };
@@ -137,6 +148,7 @@
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
       loadOrders();
+      loadProductsForAdmin();
       loadSettingsForForm();
     } else {
       alert('عذراً، هذا الحساب ليس لديه صلاحيات المدير!');
@@ -160,44 +172,24 @@
   // --- قسم الطلبات ---
   async function loadOrders() {
     const { data: orders, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
-    if (error) { alert('خطأ في جلب الطلبات: ' + error.message); return; }
-    
+    if (error) return;
     const list = document.getElementById('orders-list');
     list.innerHTML = '';
-
-    if (!orders || orders.length === 0) {
-      list.innerHTML = '<p style="text-align:center; color:var(--muted);">لا توجد طلبات حالياً.</p>';
-      return;
-    }
-
+    if (!orders || orders.length === 0) { list.innerHTML = '<p style="text-align:center;">لا توجد طلبات.</p>'; return; }
     orders.forEach(order => {
-      const card = document.createElement('div');
-      card.className = 'order-card';
-      
       let statusClass = order.status === 'pending' ? 'pending' : (order.status === 'approved' ? 'approved' : 'rejected');
       let statusText = order.status === 'pending' ? 'قيد الانتظار' : (order.status === 'approved' ? 'مقبول' : 'مرفوض');
-
+      const card = document.createElement('div');
+      card.className = 'order-card';
       card.innerHTML = `
-        <div class="order-header">
-          <h3>${order.product_name}</h3>
-          <span class="status ${statusClass}">${statusText}</span>
-        </div>
+        <div class="order-header"><h3>${order.product_name}</h3><span class="status ${statusClass}">${statusText}</span></div>
         <div class="order-details">
           <p><strong>الزبون:</strong> ${order.user_email}</p>
           <p><strong>طريقة الدفع:</strong> ${order.payment_method}</p>
           <p><strong>المبلغ:</strong> ${order.amount_paid}</p>
           ${order.game_id ? `<p style="color:var(--gold); font-weight:bold;">الآيدي: ${order.game_id}</p>` : ''}
-          <p><strong>التاريخ:</strong> ${new Date(order.created_at).toLocaleString('ar-DZ')}</p>
         </div>
-        ${order.receipt_url ? `<img src="${order.receipt_url}" class="receipt-img" onclick="window.open(this.src)" title="اضغط لرؤية الوصل">` : ''}
-        
-        ${order.status === 'pending' ? `
-          <input type="text" id="reject-reason-${order.id}" class="reject-input" placeholder="اكتب سبب الرفض هنا...">
-          <div class="order-actions">
-            <button class="btn-approve" onclick="updateOrderStatus(${order.id}, 'approved')">قبول الطلب</button>
-            <button class="btn-reject" onclick="promptReject(${order.id})">رفض الطلب</button>
-          </div>
-        ` : ''}
+        ${order.status === 'pending' ? `<input type="text" id="reject-reason-${order.id}" class="reject-input" placeholder="سبب الرفض..."><div class="order-actions"><button class="btn-approve" onclick="updateOrderStatus(${order.id}, 'approved')">قبول</button><button class="btn-reject" onclick="promptReject(${order.id})">رفض</button></div>` : ''}
       `;
       list.appendChild(card);
     });
@@ -205,38 +197,63 @@
 
   function promptReject(orderId) {
     const reasonInput = document.getElementById(`reject-reason-${orderId}`);
-    if (reasonInput.style.display === 'none' || reasonInput.style.display === '') {
-      reasonInput.style.display = 'block';
-      reasonInput.focus();
-    } else {
-      const reason = reasonInput.value;
-      if (!reason) { alert('يرجى كتابة سبب الرفض أولاً.'); return; }
-      updateOrderStatus(orderId, 'rejected', reason);
-    }
+    if (reasonInput.style.display === 'none' || reasonInput.style.display === '') { reasonInput.style.display = 'block'; reasonInput.focus(); } 
+    else { const reason = reasonInput.value; if (!reason) { alert('اكتب سبب الرفض'); return; } updateOrderStatus(orderId, 'rejected', reason); }
   }
 
   async function updateOrderStatus(orderId, newStatus, reason = '') {
-    const confirmMsg = newStatus === 'approved' ? 'هل أنت متأكد من قبول الطلب؟' : 'هل أنت متأكد من رفض الطلب؟';
-    if (!confirm(confirmMsg)) return;
-
+    if (!confirm('هل أنت متأكد؟')) return;
     const updateData = { status: newStatus };
     if (newStatus === 'rejected' && reason) updateData.rejection_reason = reason;
-
-    const { error } = await supabaseClient.from('orders').update(updateData).eq('id', orderId);
-    if (error) { alert('خطأ: ' + error.message); return; }
-    
-    alert('تم تحديث حالة الطلب!');
+    await supabaseClient.from('orders').update(updateData).eq('id', orderId);
     loadOrders();
   }
 
-  // --- قسم إعدادات الدفع ---
+  // --- قسم المنتجات ---
+  async function loadProductsForAdmin() {
+    const { data: products } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+    const list = document.getElementById('products-list');
+    list.innerHTML = '';
+    if (!products) return;
+    products.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'product-item';
+      div.innerHTML = `<div><h4>${p.name}</h4><span style="color:var(--muted); font-size:0.8rem;">${p.price} DA | ${p.category}</span></div>
+                       <div class="actions"><button class="btn-delete" onclick="deleteProduct(${p.id})">حذف</button></div>`;
+      list.appendChild(div);
+    });
+  }
+
+  async function addProduct() {
+    const name = document.getElementById('pName').value;
+    const desc = document.getElementById('pDesc').value;
+    const price = document.getElementById('pPrice').value;
+    const category = document.getElementById('pCategory').value;
+    const image = document.getElementById('pImage').value;
+
+    if (!name || !price) { alert('أدخل الاسم والسعر'); return; }
+
+    const { error } = await supabaseClient.from('products').insert({ name, description: desc, price, category, image_url: image });
+    if (error) { alert('خطأ: ' + error.message); return; }
+    alert('تم إضافة المنتج بنجاح!');
+    document.getElementById('pName').value = ''; document.getElementById('pDesc').value = ''; document.getElementById('pPrice').value = ''; document.getElementById('pImage').value = '';
+    loadProductsForAdmin();
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm('هل أنت متأكد من حذف المنتج؟')) return;
+    await supabaseClient.from('products').delete().eq('id', id);
+    loadProductsForAdmin();
+  }
+
+  // --- قسم الإعدادات ---
   async function loadSettingsForForm() {
     const { data, error } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
-    if (error) { console.error(error); return; }
-    
+    if (error) return;
     document.getElementById('setFlexy').value = data.flexy_number || '';
-    document.getElementById('setRib').value = data.ccp_rib || '';
+    document.getElementById('setCcpNum').value = data.ccp_number || '';
     document.getElementById('setKey').value = data.ccp_key || '';
+    document.getElementById('setRib').value = data.ccp_rib || '';
     document.getElementById('setName').value = data.ccp_name || '';
     document.getElementById('setBinanceId').value = data.binance_id || '';
     document.getElementById('setBinanceEmail').value = data.binance_email || '';
@@ -244,23 +261,19 @@
 
   async function saveSettings() {
     const flexy = document.getElementById('setFlexy').value;
-    const rib = document.getElementById('setRib').value;
+    const ccpNum = document.getElementById('setCcpNum').value;
     const key = document.getElementById('setKey').value;
+    const rib = document.getElementById('setRib').value;
     const name = document.getElementById('setName').value;
     const binanceId = document.getElementById('setBinanceId').value;
     const binanceEmail = document.getElementById('setBinanceEmail').value;
 
     const { error } = await supabaseClient.from('settings').update({
-      flexy_number: flexy,
-      ccp_rib: rib,
-      ccp_key: key,
-      ccp_name: name,
-      binance_id: binanceId,
-      binance_email: binanceEmail
+      flexy_number: flexy, ccp_number: ccpNum, ccp_key: key, ccp_rib: rib, ccp_name: name, binance_id: binanceId, binance_email: binanceEmail
     }).eq('id', 1);
 
-    if (error) { alert('خطأ في الحفظ: ' + error.message); return; }
-    alert('تم حفظ إعدادات الدفع بنجاح! ستظهر للزبائن فوراً.');
+    if (error) { alert('خطأ: ' + error.message); return; }
+    alert('تم حفظ الإعدادات بنجاح!');
   }
 </script>
 </body>
