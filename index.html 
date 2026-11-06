@@ -50,17 +50,19 @@
   .status-rejected { background: #ff4d4d; color: #fff; }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; place-items: center; }
-  .modal-content { background: var(--card); border: 1px solid var(--gold); border-radius: 15px; padding: 25px 20px; width: 90%; max-width: 400px; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
+  .modal-content { background: var(--card); border: 1px solid var(--gold); border-radius: 15px; padding: 25px 20px; width: 90%; max-width: 420px; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
   .close-btn { position: absolute; top: 10px; left: 15px; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
   
   .pay-btn { width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; color: #fff; }
   .pay-flexy { background: #ff6b00; } .pay-ccp { background: #0055a4; } .pay-binance { background: #f3ba2f; color: #000; }
   
   /* صندوق معلومات الدفع */
-  .payment-info-box { background: #111; border: 1px solid var(--gold); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: right; }
-  .payment-info-box h4 { color: var(--gold); margin-bottom: 10px; font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 5px; }
-  .payment-info-box p { font-size: 0.9rem; margin-bottom: 5px; color: var(--text); }
-  .payment-info-box span { color: var(--gold-soft); font-weight: bold; user-select: all; }
+  .payment-info-box { background: #111; border: 1px solid var(--gold); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: right; font-size: 0.9rem; }
+  .payment-info-box h4 { color: var(--gold); margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+  .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: #000; padding: 5px 8px; border-radius: 4px; border: 1px solid #222; }
+  .info-row span { color: var(--gold-soft); font-weight: bold; font-family: monospace; font-size: 1rem; }
+  .copy-btn { background: var(--gold); color: #000; border: none; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold; margin-right: 5px; }
+  .warning-text { color: #ff4d4d; font-size: 0.8rem; margin-top: 10px; text-align: center; border-top: 1px dashed #444; padding-top: 8px; }
 
   .input-group { margin-bottom: 15px; text-align: right; }
   .input-group label { display: block; margin-bottom: 5px; color: var(--gold); font-weight: 700; }
@@ -111,7 +113,7 @@
     <button class="close-btn" onclick="closeModal('receiptModal')">&times;</button>
     <h2 style="color:var(--gold); margin-bottom: 15px;">إتمام الطلب</h2>
     
-    <!-- صندوق معلومات الدفع (يتم تعبئته ديناميكياً) -->
+    <!-- صندوق معلومات الدفع -->
     <div id="paymentDetails" class="payment-info-box"></div>
 
     <div class="input-group" id="gameIdGroup" style="display: none;">
@@ -157,15 +159,15 @@
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   let currentUser = null; let isSignUpMode = false;
   let currentOrderProduct = ""; let currentOrderMethod = ""; let isTopUp = false;
+  let currentSettings = null;
 
-  // معلومات الدفع (يمكنك تغييرها لاحقاً)
-  const paymentDetails = {
-    'Flexy': '<h4>الدفع عبر فليكسي (Flexy)</h4><p>رقم الفليكسي: <span>0562159983</span></p><p>التعليمات: قم بتحويل المبلغ المطلوب إلى الرقم أعلاه، ثم قم بتصوير الوصل ورفعه هنا.</p>',
-    'CCP / BaridiMob': '<h4>الدفع عبر CCP / BaridiMob</h4><p>رقم الحساب البريدي (CCP): <span>0023456789</span></p><p>الاسم: <span>GDX CHEF</span></p><p>التعليمات: قم بتحويل المبلغ إلى الحساب أعلاه، ثم قم بتصوير الوصل ورفعه هنا.</p>',
-    'Binance': '<h4>الدفع عبر Binance (USDT)</h4><p>عنوان المحفظة (USDT TRC20): <span>TXYZ1234567890ABCDEF</span></p><p>التعليمات: قم بتحويل المبلغ بالدولار إلى المحفظة أعلاه، ثم قم بتصوير الوصل ورفعه هنا.</p>'
-  };
+  function initApp() { checkSession(); loadProducts(); loadSettings(); }
 
-  function initApp() { checkSession(); loadProducts(); }
+  // جلب إعدادات الدفع من قاعدة البيانات
+  async function loadSettings() {
+    const { data, error } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
+    if (!error && data) currentSettings = data;
+  }
 
   async function checkSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -249,17 +251,47 @@
     document.getElementById('modal-product-name').innerText = productName;
     const optionsContainer = document.getElementById('payment-options');
     optionsContainer.innerHTML = type === 'accounts_ff' || type === 'accounts_efootball' 
-      ? `<button class="pay-btn pay-ccp" onclick="selectPayment('CCP / BaridiMob')">CCP / BaridiMob</button><button class="pay-btn pay-binance" onclick="selectPayment('Binance')">Binance</button>`
-      : `<button class="pay-btn pay-flexy" onclick="selectPayment('Flexy')">Flexy</button><button class="pay-btn pay-ccp" onclick="selectPayment('CCP / BaridiMob')">CCP / BaridiMob</button><button class="pay-btn pay-binance" onclick="selectPayment('Binance')">Binance</button>`;
+      ? `<button class="pay-btn pay-ccp" onclick="selectPayment('CCP')">CCP / BaridiMob</button><button class="pay-btn pay-binance" onclick="selectPayment('Binance')">Binance</button>`
+      : `<button class="pay-btn pay-flexy" onclick="selectPayment('Flexy')">Flexy</button><button class="pay-btn pay-ccp" onclick="selectPayment('CCP')">CCP / BaridiMob</button><button class="pay-btn pay-binance" onclick="selectPayment('Binance')">Binance</button>`;
     document.getElementById('paymentModal').style.display = 'grid';
   }
 
+  // دالة لنسخ النص
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('تم النسخ بنجاح!');
+    }).catch(err => {
+      alert('فشل النسخ: ' + err);
+    });
+  }
+
   function selectPayment(method) {
-    currentOrderMethod = method;
+    currentOrderMethod = method === 'CCP' ? 'CCP / BaridiMob' : method;
     closeModal('paymentModal');
     
-    // عرض معلومات الدفع
-    document.getElementById('paymentDetails').innerHTML = paymentDetails[method] || '';
+    const box = document.getElementById('paymentDetails');
+    box.innerHTML = '';
+
+    if (currentSettings) {
+      if (method === 'Flexy') {
+        box.innerHTML = `<h4>الدفع عبر فليكسي (Flexy)</h4>
+          <div class="info-row"><span>${currentSettings.flexy_number}</span><button class="copy-btn" onclick="copyToClipboard('${currentSettings.flexy_number}')">نسخ</button></div>
+          <p style="text-align:center; font-size:0.85rem; color:var(--muted);">يرجى تحويل المبلغ إلى الرقم أعلاه.</p>`;
+      } else if (method === 'CCP') {
+        box.innerHTML = `<h4>الدفع عبر CCP / BaridiMob</h4>
+          <div class="info-row"><span>${currentSettings.ccp_rib}</span><button class="copy-btn" onclick="copyToClipboard('${currentSettings.ccp_rib}')">نسخ RIB</button></div>
+          <p>CCP: <strong>${currentSettings.ccp_rib}</strong> | المفتاح: <strong>${currentSettings.ccp_key}</strong></p>
+          <p>الاسم: <strong>${currentSettings.ccp_name}</strong></p>
+          <div class="warning-text">📌 يتوقف الدفع عبر هاته الطريقة على الساعة 9 ليلا ويعود الساعة 7 صباحا. أي دفع بعد الـ 9 مساءً مرفوض.</div>`;
+      } else if (method === 'Binance') {
+        box.innerHTML = `<h4>الدفع عبر Binance</h4>
+          <p>البريد الإلكتروني: <strong>${currentSettings.binance_email}</strong></p>
+          <div class="info-row"><span>ID: ${currentSettings.binance_id}</span><button class="copy-btn" onclick="copyToClipboard('${currentSettings.binance_id}')">نسخ ID</button></div>
+          <p style="text-align:center; font-size:0.85rem; color:var(--muted);">يرجى تحويل المبلغ بالدولار عبر Binance.</p>`;
+      }
+    } else {
+      box.innerHTML = '<p style="color:red;">خطأ في تحميل معلومات الدفع. يرجى تحديث الصفحة.</p>';
+    }
 
     document.getElementById('gameIdGroup').style.display = isTopUp ? 'block' : 'none';
     document.getElementById('receiptModal').style.display = 'grid';
