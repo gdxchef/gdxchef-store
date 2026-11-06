@@ -43,7 +43,6 @@
   .price { font-size: 1.1rem; font-weight: 900; margin-bottom: 10px; }
   .btn { background: var(--gold); color: #000; border: none; cursor: pointer; padding: 8px; border-radius: 8px; font-weight: 700; width: 100%; font-family: inherit; font-size: 0.85rem; }
 
-  /* بطاقات طلبات الزبون */
   .order-history-card { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
   .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
   .status-pending { background: var(--yellow); color: #000; }
@@ -51,11 +50,18 @@
   .status-rejected { background: #ff4d4d; color: #fff; }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; place-items: center; }
-  .modal-content { background: var(--card); border: 1px solid var(--gold); border-radius: 15px; padding: 25px 20px; width: 90%; max-width: 380px; text-align: center; position: relative; }
+  .modal-content { background: var(--card); border: 1px solid var(--gold); border-radius: 15px; padding: 25px 20px; width: 90%; max-width: 400px; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
   .close-btn { position: absolute; top: 10px; left: 15px; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+  
   .pay-btn { width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; color: #fff; }
   .pay-flexy { background: #ff6b00; } .pay-ccp { background: #0055a4; } .pay-binance { background: #f3ba2f; color: #000; }
   
+  /* صندوق معلومات الدفع */
+  .payment-info-box { background: #111; border: 1px solid var(--gold); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: right; }
+  .payment-info-box h4 { color: var(--gold); margin-bottom: 10px; font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 5px; }
+  .payment-info-box p { font-size: 0.9rem; margin-bottom: 5px; color: var(--text); }
+  .payment-info-box span { color: var(--gold-soft); font-weight: bold; user-select: all; }
+
   .input-group { margin-bottom: 15px; text-align: right; }
   .input-group label { display: block; margin-bottom: 5px; color: var(--gold); font-weight: 700; }
   .input-group input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
@@ -86,14 +92,10 @@
   </div>
   <div id="page-games" class="page-section"><h2 class="section-title">شحن الألعاب</h2><div class="products-grid" id="games-products"></div></div>
   <div id="page-accounts" class="page-section"><h2 class="section-title">حسابات</h2><div class="products-grid" id="accounts-products"></div></div>
-  
-  <div id="page-myOrders" class="page-section">
-    <h2 class="section-title">طلباتي</h2>
-    <div id="my-orders-list"></div>
-  </div>
+  <div id="page-myOrders" class="page-section"><h2 class="section-title">طلباتي</h2><div id="my-orders-list"></div></div>
 </div>
 
-<!-- نافذة الدفع -->
+<!-- نافذة اختيار طريقة الدفع -->
 <div class="modal-overlay" id="paymentModal">
   <div class="modal-content">
     <button class="close-btn" onclick="closeModal('paymentModal')">&times;</button>
@@ -109,6 +111,9 @@
     <button class="close-btn" onclick="closeModal('receiptModal')">&times;</button>
     <h2 style="color:var(--gold); margin-bottom: 15px;">إتمام الطلب</h2>
     
+    <!-- صندوق معلومات الدفع (يتم تعبئته ديناميكياً) -->
+    <div id="paymentDetails" class="payment-info-box"></div>
+
     <div class="input-group" id="gameIdGroup" style="display: none;">
       <label>أدخل الآيدي (ID) الخاص باللعبة</label>
       <input type="text" id="gameIdInput" placeholder="مثلاً 123456789">
@@ -152,6 +157,13 @@
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   let currentUser = null; let isSignUpMode = false;
   let currentOrderProduct = ""; let currentOrderMethod = ""; let isTopUp = false;
+
+  // معلومات الدفع (يمكنك تغييرها لاحقاً)
+  const paymentDetails = {
+    'Flexy': '<h4>الدفع عبر فليكسي (Flexy)</h4><p>رقم الفليكسي: <span>0562159983</span></p><p>التعليمات: قم بتحويل المبلغ المطلوب إلى الرقم أعلاه، ثم قم بتصوير الوصل ورفعه هنا.</p>',
+    'CCP / BaridiMob': '<h4>الدفع عبر CCP / BaridiMob</h4><p>رقم الحساب البريدي (CCP): <span>0023456789</span></p><p>الاسم: <span>GDX CHEF</span></p><p>التعليمات: قم بتحويل المبلغ إلى الحساب أعلاه، ثم قم بتصوير الوصل ورفعه هنا.</p>',
+    'Binance': '<h4>الدفع عبر Binance (USDT)</h4><p>عنوان المحفظة (USDT TRC20): <span>TXYZ1234567890ABCDEF</span></p><p>التعليمات: قم بتحويل المبلغ بالدولار إلى المحفظة أعلاه، ثم قم بتصوير الوصل ورفعه هنا.</p>'
+  };
 
   function initApp() { checkSession(); loadProducts(); }
 
@@ -233,17 +245,22 @@
   function handleBuy(productName, type) {
     if (!currentUser) { alert('سجل الدخول أولاً!'); document.getElementById('authModal').style.display = 'grid'; return; }
     currentOrderProduct = productName;
-    isTopUp = (type === 'games' || type === 'apps'); // إذا كان شحن، نطلب الآيدي
+    isTopUp = (type === 'games' || type === 'apps');
     document.getElementById('modal-product-name').innerText = productName;
     const optionsContainer = document.getElementById('payment-options');
     optionsContainer.innerHTML = type === 'accounts_ff' || type === 'accounts_efootball' 
       ? `<button class="pay-btn pay-ccp" onclick="selectPayment('CCP / BaridiMob')">CCP / BaridiMob</button><button class="pay-btn pay-binance" onclick="selectPayment('Binance')">Binance</button>`
-      : `<button class="pay-btn pay-flexy" onclick="selectPayment('Flexy')">Flexy</button><button class="pay-btn pay-ccp" onclick="selectPayment('CCP')">CCP / BaridiMob</button><button class="pay-btn pay-binance" onclick="selectPayment('Binance')">Binance</button>`;
+      : `<button class="pay-btn pay-flexy" onclick="selectPayment('Flexy')">Flexy</button><button class="pay-btn pay-ccp" onclick="selectPayment('CCP / BaridiMob')">CCP / BaridiMob</button><button class="pay-btn pay-binance" onclick="selectPayment('Binance')">Binance</button>`;
     document.getElementById('paymentModal').style.display = 'grid';
   }
 
   function selectPayment(method) {
-    currentOrderMethod = method; closeModal('paymentModal'); 
+    currentOrderMethod = method;
+    closeModal('paymentModal');
+    
+    // عرض معلومات الدفع
+    document.getElementById('paymentDetails').innerHTML = paymentDetails[method] || '';
+
     document.getElementById('gameIdGroup').style.display = isTopUp ? 'block' : 'none';
     document.getElementById('receiptModal').style.display = 'grid';
   }
