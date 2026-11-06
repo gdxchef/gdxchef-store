@@ -17,9 +17,15 @@
   .login-box button { width: 100%; padding: 10px; background: var(--gold); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
   #dashboard { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
-  header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+  header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
   header h1 { color: var(--gold); font-size: 1.5rem; }
   .logout-btn { background: #ff4d4d; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+  .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+  .tab-btn { background: #222; color: var(--text); border: 1px solid #333; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; }
+  .tab-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+  .content-section { display: none; }
+  .content-section.active { display: block; }
 
   .order-card { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
   .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
@@ -36,10 +42,16 @@
   .btn-approve { background: #25D366; color: #fff; }
   .btn-reject { background: #ff4d4d; color: #fff; }
   .receipt-img { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin-top: 10px; border: 1px solid #333; cursor: pointer; }
-  
   .reject-input { width: 100%; padding: 8px; margin-top: 10px; border-radius: 6px; border: 1px solid #ff4d4d; background: #000; color: #fff; display: none; }
-
   .error-msg { color: #ff4d4d; font-size: 0.9rem; margin-bottom: 10px; display: none; }
+
+  /* إعدادات الدفع */
+  .settings-group { background: var(--card); border: 1px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .settings-group h3 { color: var(--gold); margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+  .input-group { margin-bottom: 15px; }
+  .input-group label { display: block; margin-bottom: 5px; color: var(--text); }
+  .input-group input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; font-family: inherit; }
+  .save-btn { background: var(--gold); color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -60,8 +72,40 @@
     <h1>لوحة التحكم</h1>
     <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
   </header>
-  <h2 style="color:var(--gold); margin-bottom: 15px;">الطلبات الجديدة</h2>
-  <div id="orders-list"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('orders')">الطلبات</button>
+    <button class="tab-btn" onclick="showTab('settings')">إعدادات الدفع</button>
+  </div>
+
+  <div id="tab-orders" class="content-section active">
+    <h2 style="color:var(--gold); margin-bottom: 15px;">الطلبات الجديدة</h2>
+    <div id="orders-list"></div>
+  </div>
+
+  <div id="tab-settings" class="content-section">
+    <h2 style="color:var(--gold); margin-bottom: 15px;">إعدادات الدفع</h2>
+    
+    <div class="settings-group">
+      <h3>Flexy (فليكسي)</h3>
+      <div class="input-group"><label>رقم الفليكسي</label><input type="text" id="setFlexy"></div>
+    </div>
+
+    <div class="settings-group">
+      <h3>CCP / BaridiMob</h3>
+      <div class="input-group"><label>RIB (رقم الحساب)</label><input type="text" id="setRib"></div>
+      <div class="input-group"><label>المفتاح (Clé)</label><input type="text" id="setKey"></div>
+      <div class="input-group"><label>الاسم الكامل</label><input type="text" id="setName"></div>
+    </div>
+
+    <div class="settings-group">
+      <h3>Binance</h3>
+      <div class="input-group"><label>ID الحساب</label><input type="text" id="setBinanceId"></div>
+      <div class="input-group"><label>البريد الإلكتروني</label><input type="text" id="setBinanceEmail"></div>
+    </div>
+
+    <button class="save-btn" onclick="saveSettings()">حفظ التغييرات</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -70,13 +114,13 @@
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY294Zm1kbWNqb2Zzd21na2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MjMzMTYsImV4cCI6MjEwOTQ5OTMxNn0.H2At_v8QhrO89001o-y0nV0sXf3Ve6nSgUcqI3RtEq8';
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // التحقق من الجلسة عند فتح الصفحة
   window.onload = async function() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session && session.user.email === 'chefgdx@gmail.com') {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
       loadOrders();
+      loadSettingsForForm();
     }
   };
 
@@ -93,6 +137,7 @@
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
       loadOrders();
+      loadSettingsForForm();
     } else {
       alert('عذراً، هذا الحساب ليس لديه صلاحيات المدير!');
       await supabaseClient.auth.signOut();
@@ -105,6 +150,14 @@
     document.getElementById('login-screen').style.display = 'flex';
   }
 
+  function showTab(tabId) {
+    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // --- قسم الطلبات ---
   async function loadOrders() {
     const { data: orders, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
     if (error) { alert('خطأ في جلب الطلبات: ' + error.message); return; }
@@ -173,7 +226,41 @@
     if (error) { alert('خطأ: ' + error.message); return; }
     
     alert('تم تحديث حالة الطلب!');
-    loadOrders(); // تحديث القائمة فقط، بدون إعادة تحميل الصفحة
+    loadOrders();
+  }
+
+  // --- قسم إعدادات الدفع ---
+  async function loadSettingsForForm() {
+    const { data, error } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
+    if (error) { console.error(error); return; }
+    
+    document.getElementById('setFlexy').value = data.flexy_number || '';
+    document.getElementById('setRib').value = data.ccp_rib || '';
+    document.getElementById('setKey').value = data.ccp_key || '';
+    document.getElementById('setName').value = data.ccp_name || '';
+    document.getElementById('setBinanceId').value = data.binance_id || '';
+    document.getElementById('setBinanceEmail').value = data.binance_email || '';
+  }
+
+  async function saveSettings() {
+    const flexy = document.getElementById('setFlexy').value;
+    const rib = document.getElementById('setRib').value;
+    const key = document.getElementById('setKey').value;
+    const name = document.getElementById('setName').value;
+    const binanceId = document.getElementById('setBinanceId').value;
+    const binanceEmail = document.getElementById('setBinanceEmail').value;
+
+    const { error } = await supabaseClient.from('settings').update({
+      flexy_number: flexy,
+      ccp_rib: rib,
+      ccp_key: key,
+      ccp_name: name,
+      binance_id: binanceId,
+      binance_email: binanceEmail
+    }).eq('id', 1);
+
+    if (error) { alert('خطأ في الحفظ: ' + error.message); return; }
+    alert('تم حفظ إعدادات الدفع بنجاح! ستظهر للزبائن فوراً.');
   }
 </script>
 </body>
