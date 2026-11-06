@@ -33,15 +33,22 @@ main{flex:1;width:100%;max-width:1000px;margin:0 auto;padding:18px 14px}
 .hero p{color:#ddd;margin-bottom:22px;font-size:1.05rem}
 .trust{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px}
 .trust span{border:1px solid var(--line);border-radius:20px;padding:3px 12px;font-size:.8rem;color:var(--gold-soft)}
-.btn{background:linear-gradient(45deg,#D4AF37,#F3E5AB);color:#000;border:0;cursor:pointer;padding:11px;border-radius:8px;font-weight:700;width:100%;font-size:.95rem;transition:.2s}
+.btn{background:linear-gradient(135deg,#C9A227,#F3E5AB);color:#111;border:0;cursor:pointer;padding:12px;border-radius:10px;font-weight:800;width:100%;font-size:.95rem;transition:.2s;box-shadow:0 4px 14px rgba(212,175,55,.25)}
+.btn:active{transform:scale(.97)}
 .btn:hover{filter:brightness(1.08)}
 .btn:disabled{opacity:.6;cursor:not-allowed}
 .btn.hero-btn{width:auto;padding:13px 34px;border-radius:30px;font-weight:900}
 .btn.green{background:linear-gradient(45deg,#25D366,#1ebe5a);color:#fff}
 .btn.gray{background:#333;color:#fff}
 .btn.out{background:none;border:1px solid var(--red);color:var(--red)}
-.ads{display:flex;overflow-x:auto;gap:10px;margin-bottom:26px;padding-bottom:8px;scroll-snap-type:x mandatory}
-.ads img{height:120px;border-radius:10px;border:1px solid var(--gold);scroll-snap-align:start}
+.slider{position:relative;aspect-ratio:16/6;min-height:110px;border-radius:14px;overflow:hidden;border:1px solid var(--gold);margin-bottom:18px;background:#000;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .7s}
+.slide.on{opacity:1}
+.slide img{width:100%;height:100%;object-fit:cover}
+.dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:6px}
+.dots button{width:8px;height:8px;border-radius:8px;border:0;background:rgba(255,255,255,.45);padding:0;cursor:pointer;transition:.3s}
+.dots button.on{background:var(--gold);width:22px}
+
 .title{color:var(--text);margin:6px 0 20px;font-size:1.35rem;font-weight:900;text-align:center}
 .title::after{content:'';display:block;width:56px;height:3px;background:var(--gold);margin:6px auto 0;border-radius:2px}
 .filters{display:flex;gap:8px;margin-bottom:16px}
@@ -55,9 +62,15 @@ main{flex:1;width:100%;max-width:1000px;margin:0 auto;padding:18px 14px}
 .info{padding:12px;text-align:center;display:flex;flex-direction:column;flex:1}
 .info h3{color:var(--gold);font-size:.98rem;margin-bottom:4px}
 .info p{color:var(--muted);font-size:.8rem;margin-bottom:8px;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.price{margin-bottom:10px;font-weight:900;font-size:1.15rem;color:var(--gold-hover)}
-.price s{color:var(--red);font-size:.85rem;font-weight:400;margin-left:6px}
-.price b{color:var(--green)}
+.price{margin-bottom:12px;min-height:62px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;direction:ltr}
+.pnow{display:flex;align-items:baseline;gap:5px}
+.pnow b{font-size:1.45rem;font-weight:900;line-height:1.1;color:var(--gold-hover)}
+.pnow small{font-size:.8rem;font-weight:700;color:var(--gold)}
+.price.sale .pnow b,.price.sale .pnow small{color:var(--green)}
+.pold{font-size:.82rem;color:var(--muted)}
+.pold s{text-decoration-color:var(--red);text-decoration-thickness:2px}
+.price.big{min-height:0}.price.big .pnow b{font-size:2.1rem}.price.big .pold{font-size:.95rem}
+.off{position:absolute;top:8px;left:8px;z-index:1;background:var(--red);color:#fff;padding:2px 10px;border-radius:20px;font-weight:900;font-size:.8rem;direction:ltr}
 .skeleton{height:290px;border-radius:12px;background:linear-gradient(90deg,#161616 25%,#222 50%,#161616 75%);background-size:200% 100%;animation:sk 1.3s infinite}
 @keyframes sk{to{background-position:-200% 0}}
 .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:30px 10px}
@@ -71,8 +84,13 @@ main{flex:1;width:100%;max-width:1000px;margin:0 auto;padding:18px 14px}
 .x{position:absolute;top:10px;left:14px;background:none;border:0;color:var(--muted);font-size:1.8rem;cursor:pointer;line-height:1}
 .x:hover{color:var(--gold)}
 .box h2{color:var(--gold);margin-bottom:14px}
-.pay{display:block;width:100%;margin-bottom:10px;padding:13px;border-radius:8px;border:0;font-weight:700;cursor:pointer;color:#fff;font-size:1rem}
-.pay.flexy{background:linear-gradient(45deg,#ff6b00,#ff8c33)}.pay.ccp{background:linear-gradient(45deg,#0055a4,#0077e6)}.pay.binance{background:linear-gradient(45deg,#f3ba2f,#f7d15d);color:#000}
+.pay{display:flex;align-items:center;gap:12px;width:100%;margin-bottom:10px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);border-right:4px solid var(--c,var(--gold));background:#1b1b1b;color:var(--text);cursor:pointer;text-align:right;transition:.2s}
+.pay:hover{border-color:var(--c);background:#202020}
+.pay .ic{font-size:1.5rem;width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:#000;flex:none}
+.pay .tx{flex:1;display:flex;flex-direction:column}
+.pay .tx b{font-size:1rem}.pay .tx small{color:var(--muted);font-size:.78rem}
+.pay .ch{color:var(--muted);font-size:1.6rem;line-height:1}
+.pay.flexy{--c:#ff6b00}.pay.ccp{--c:#2f86ff}.pay.binance{--c:#f3ba2f}
 .gallery{display:flex;overflow-x:auto;gap:10px;margin-bottom:16px;scroll-snap-type:x mandatory}
 .gallery img{height:340px;min-width:100%;object-fit:contain;border-radius:8px;border:1px solid var(--line);scroll-snap-align:center;background:#000}
 .pinfo{background:#111;border:1px solid var(--gold);border-radius:8px;padding:14px;margin-bottom:14px;text-align:right;font-size:.9rem}
@@ -92,6 +110,14 @@ main{flex:1;width:100%;max-width:1000px;margin:0 auto;padding:18px 14px}
 .toast{background:#1d1d1d;border:1px solid var(--gold);border-radius:10px;padding:11px 14px;font-weight:700;font-size:.9rem;animation:up .25s}
 .toast.ok{border-color:var(--green)}.toast.bad{border-color:var(--red)}
 footer{text-align:center;padding:18px;border-top:1px solid #222;color:var(--muted);font-size:.85rem}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.tiles button{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 6px;color:var(--text);font-weight:700;font-size:.9rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.2s}
+.tiles button span{font-size:1.6rem}
+.tiles button:hover{border-color:var(--gold);color:var(--gold)}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:right;margin-bottom:14px}
+.spec{background:#0d0d0d;border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column}
+.spec span{color:var(--muted);font-size:.75rem}.spec b{color:var(--gold-hover);font-size:.95rem;word-break:break-word}
+.specp{grid-column:1/-1;color:var(--muted);font-size:.9rem}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -115,7 +141,8 @@ footer{text-align:center;padding:18px;border-top:1px solid #222;color:var(--mute
       <button class="btn hero-btn" data-page="games">تصفح المنتجات</button>
       <div class="trust"><span>دفع عبر Flexy وCCP وBinance</span><span>مراجعة الطلب يدوياً</span><span>تتبع طلباتك من حسابك</span></div>
     </div>
-    <div class="ads" id="ads"></div>
+    <div class="slider" id="ads" style="display:none"></div>
+    <div class="tiles"><button data-page="games"><span>🎮</span>شحن الألعاب</button><button data-page="accounts"><span>👤</span>حسابات</button><button data-page="myOrders"><span>📦</span>طلباتي</button></div>
     <h2 class="title">أحدث المنتجات</h2>
     <div class="grid" id="grid-home"></div>
   </section>
@@ -131,9 +158,9 @@ footer{text-align:center;padding:18px;border-top:1px solid #222;color:var(--mute
 <div class="modal" id="detailsModal"><div class="box" style="max-width:680px">
   <button class="x" data-close aria-label="إغلاق">&times;</button>
   <h2 id="dName"></h2>
-  <p id="dDesc" style="color:var(--muted);margin-bottom:14px;text-align:right;white-space:pre-line"></p>
+  <div id="dDesc" class="specs"></div>
   <div class="gallery" id="gallery"></div>
-  <div id="dPrice" class="price" style="font-size:1.6rem;margin-bottom:14px"></div>
+  <div id="dPrice" class="price big" style="margin-bottom:14px"></div>
   <button class="btn green" id="dBuy">شراء</button>
 </div></div>
 
@@ -204,12 +231,18 @@ function showPage(id){
 }
 
 /* المنتجات */
+const onSale=p=>Number(p.discount_price)>0&&Number(p.discount_price)<Number(p.price);
+const pct=p=>Math.round((1-p.discount_price/p.price)*100);
+function priceHtml(p){
+  return onSale(p)
+    ?`<div class="pnow"><b>${money(p.discount_price)}</b><small>DA</small></div><div class="pold"><s>${money(p.price)} DA</s></div>`
+    :`<div class="pnow"><b>${money(p.price)}</b><small>DA</small></div>`;
+}
 function cardHtml(p){
-  const price=p.discount_price>0?`<s>${money(p.price)} DA</s><b>${money(p.discount_price)} DA</b>`:`${money(p.price)} DA`;
   const img=safeUrl(p.image_url)||FALLBACK;
-  return `<article class="card">${p.is_sold?'<div class="sold">تم البيع</div>':''}
+  return `<article class="card">${p.is_sold?'<div class="sold">تم البيع</div>':''}${onSale(p)&&!p.is_sold?`<div class="off">-${pct(p)}%</div>`:''}
   <img src="${esc(img)}" alt="${esc(p.name)}" loading="lazy" data-act="details" data-id="${esc(p.id)}" onerror="this.onerror=null;this.src='${FALLBACK}'">
-  <div class="info"><h3>${esc(p.name)}</h3><p>${esc(p.description)}</p><div class="price">${price}</div>
+  <div class="info"><h3>${esc(p.name)}</h3><p>${esc(p.description)}</p><div class="price${onSale(p)?' sale':''}">${priceHtml(p)}</div>
   <button class="btn" ${p.is_sold?'disabled':''} data-act="buy" data-id="${esc(p.id)}">${p.is_sold?'تم البيع':'شراء'}</button></div></article>`;
 }
 function renderGrid(id,list,msg){$(id).innerHTML=list.length?list.map(cardHtml).join(''):`<div class="empty">${msg}</div>`}
@@ -232,7 +265,23 @@ async function loadAds(){
   const{data}=await db.from('ads').select('image_url').eq('is_active',true);
   const box=$('ads');const list=(data||[]).filter(a=>safeUrl(a.image_url));
   if(!list.length){box.style.display='none';return}
-  box.innerHTML=list.map(a=>`<img src="${esc(a.image_url)}" alt="إعلان" loading="lazy">`).join('');
+  box.style.display='block';
+  box.innerHTML=list.map((a,i)=>`<div class="slide${i?'':' on'}"><img src="${esc(a.image_url)}" alt="إعلان"${i?' loading="lazy"':''}></div>`).join('')
+    +(list.length>1?`<div class="dots">${list.map((_,i)=>`<button class="${i?'':'on'}" data-ad="${i}" aria-label="إعلان ${i+1}"></button>`).join('')}</div>`:'');
+  adIdx=0;clearInterval(adTimer);
+  if(list.length>1)adTimer=setInterval(()=>goAd(adIdx+1),3000);
+}
+let adTimer,adIdx=0;
+function goAd(n){
+  const s=document.querySelectorAll('#ads .slide');if(!s.length)return;
+  adIdx=(n+s.length)%s.length;
+  s.forEach((e,i)=>e.classList.toggle('on',i===adIdx));
+  document.querySelectorAll('#ads .dots button').forEach((e,i)=>e.classList.toggle('on',i===adIdx));
+}
+function specs(t){
+  const parts=String(t||'').split('\n').flatMap(l=>l.split(' / ')).map(s=>s.trim()).filter(Boolean);
+  return parts.map(s=>{const i=s.indexOf(':');
+    return i>0&&i<28?`<div class="spec"><span>${esc(s.slice(0,i).trim())}</span><b>${esc(s.slice(i+1).trim())}</b></div>`:`<p class="specp">${esc(s)}</p>`}).join('');
 }
 async function loadSettings(){
   if(!S.user){S.settings=null;return}
@@ -242,8 +291,9 @@ async function loadSettings(){
 
 /* تفاصيل المنتج */
 function showDetails(p){
-  $('dName').textContent=p.name;$('dDesc').textContent=p.description||'';
-  $('dPrice').innerHTML=p.discount_price>0?`<s>${money(p.price)} DA</s><b>${money(p.discount_price)} DA</b>`:`${money(p.price)} DA`;
+  $('dName').textContent=p.name;$('dDesc').innerHTML=specs(p.description);
+  $('dPrice').className='price big'+(onSale(p)?' sale':'');
+  $('dPrice').innerHTML=priceHtml(p);
   const imgs=[p.image_url,...(Array.isArray(p.images)?p.images:[])].map(safeUrl).filter(Boolean);
   $('gallery').innerHTML=(imgs.length?imgs:[FALLBACK]).map(u=>`<img src="${esc(u)}" alt="${esc(p.name)}" loading="lazy">`).join('');
   const b=$('dBuy');b.disabled=!!p.is_sold;b.textContent=p.is_sold?'تم البيع':'شراء';
@@ -256,10 +306,10 @@ function buy(p){
   if(p.is_sold){toast('هذا المنتج تم بيعه بالفعل','bad');return}
   if(!S.user){toast('سجّل الدخول أولاً');openModal('authModal');return}
   S.cur=p;
-  $('payProduct').textContent=p.name;
+  $('payProduct').innerHTML=`${esc(p.name)} <span style="color:var(--gold)">— ${money(onSale(p)?p.discount_price:p.price)} DA</span>`;
   const opts=isAccount(p.category)?['CCP','Binance']:['Flexy','CCP','Binance'];
-  const label={Flexy:'Flexy',CCP:'CCP / BaridiMob',Binance:'Binance'};
-  $('payOptions').innerHTML=opts.map(m=>`<button class="pay ${m.toLowerCase()}" data-act="pay" data-m="${m}">${label[m]}</button>`).join('');
+  const META={Flexy:['📱','Flexy','تحويل رصيد فليكسي'],CCP:['🏦','CCP / BaridiMob','تحويل بريدي أو عبر التطبيق'],Binance:['🪙','Binance','تحويل بالدولار (USDT)']};
+  $('payOptions').innerHTML=opts.map(m=>`<button class="pay ${m.toLowerCase()}" data-act="pay" data-m="${m}"><span class="ic">${META[m][0]}</span><span class="tx"><b>${META[m][1]}</b><small>${META[m][2]}</small></span><span class="ch">‹</span></button>`).join('');
   openModal('payModal');
 }
 const copyRow=(v,l='نسخ')=>`<div class="row"><span>${esc(v)}</span><button class="copy" data-copy="${esc(v)}">${l}</button></div>`;
@@ -273,6 +323,7 @@ async function selectPayment(m){
   else if(m==='CCP')box.innerHTML=`<h4>الدفع عبر CCP / BaridiMob</h4><p>الاسم: <strong>${esc(s.ccp_name)}</strong></p>${copyRow(s.ccp_number,'نسخ CCP')}<p>المفتاح (Clé): <strong>${esc(s.ccp_key)}</strong></p>${copyRow(s.ccp_rib,'نسخ RIB')}<div class="warn">📌 الدفع بهذه الطريقة يتوقف على الساعة 9 ليلاً</div>`;
   else box.innerHTML=`<h4>الدفع عبر Binance</h4><p>البريد: <strong>${esc(s.binance_email)}</strong></p>${copyRow(s.binance_id)}<p class="note" style="text-align:center">حوّل المبلغ بالدولار عبر Binance.</p>`;
   $('gameIdBox').style.display=isAccount(S.cur.category)?'none':'block';
+  $('amount').value=onSale(S.cur)?S.cur.discount_price:S.cur.price;
   openModal('receiptModal');
 }
 async function copyText(t){
@@ -360,9 +411,10 @@ async function onUser(user){
 
 /* الأحداث */
 document.addEventListener('click',e=>{
-  const el=e.target.closest('[data-act],[data-page],[data-close],[data-copy]');
+  const el=e.target.closest('[data-act],[data-page],[data-close],[data-copy],[data-ad]');
   if(e.target.classList.contains('modal'))return closeAll();
   if(!el)return;
+  if(el.dataset.ad!==undefined){goAd(+el.dataset.ad);clearInterval(adTimer);adTimer=setInterval(()=>goAd(adIdx+1),3000);return}
   if(el.dataset.page)return showPage(el.dataset.page);
   if('close' in el.dataset)return closeAll();
   if(el.dataset.copy)return copyText(el.dataset.copy);
@@ -385,6 +437,9 @@ $('logout').onclick=async()=>{await db.auth.signOut();closeAll();showPage('home'
 ['games','accounts'].forEach(k=>$('q-'+k).addEventListener('input',renderProducts));
 
 $('year').textContent=new Date().getFullYear();
+let tx=0;
+$('ads').addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+$('ads').addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>40)goAd(adIdx+(d<0?1:-1))});
 db.auth.onAuthStateChange((_e,session)=>{setTimeout(()=>onUser(session?session.user:null),0)});
 loadProducts();loadAds();
 </script>
